@@ -69,6 +69,9 @@
   .more { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
   .more h3 { margin: 0 0 4px; font-size: 1rem; }
   .count { font-weight: 700; }
+  section.need { border-color: var(--bad); box-shadow: 0 0 0 2px var(--bad); }
+  .notice { margin: 0 0 10px; padding: 10px 12px; border-radius: 8px; background: var(--chip);
+            display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   pre#resume { white-space: pre-wrap; background: var(--chip); border-radius: 8px; padding: 12px;
                font: 14px/1.5 ui-monospace, Consolas, monospace; }
   .small { font-size: .85rem; color: var(--muted); }
@@ -80,7 +83,7 @@
   <h1>🎓 Работа под учёбу</h1>
   <p class="sub">Отметь, когда ты свободен от пар и что умеешь. Покажем только вакансии, которые можно совмещать с учёбой, и соберём резюме.</p>
 
-  <section>
+  <section id="step1">
     <h2>1. Где и когда ты можешь работать</h2>
     <label class="f" for="city">Город</label>
     <input type="text" id="city" list="cityList" placeholder="Начни вводить, например: Минск (пусто — любой город)" autocomplete="off">
@@ -90,6 +93,7 @@
 
     <label class="f">Когда ты свободен от учёбы? <span class="hint">(можно несколько)</span></label>
     <div class="chips" id="slots"></div>
+    <div class="err" id="err1"></div>
 
     <label class="f">Или укажи своё время <span class="hint">(дни и часы, когда точно свободен)</span></label>
     <div class="chips" id="days"></div>
@@ -142,7 +146,7 @@
 
   <section>
     <h2>3. Резюме за минуту</h2>
-    <p class="small" style="margin-top:0">Навыки и время возьмём из пунктов выше. Добавь пару строк о себе.</p>
+    <p class="small" style="margin-top:0">Навыки и время берутся из пунктов 1 и 2 выше. Здесь добавь пару строк о себе — вакансии подберём заодно.</p>
     <div class="row">
       <div><label class="f" for="name">Имя и фамилия</label><input type="text" id="name"></div>
       <div><label class="f" for="contact">Телефон или Telegram</label><input type="text" id="contact"></div>
@@ -158,6 +162,7 @@
 Летняя подработка промоутером"></textarea>
     <button class="main" id="makeResume">Сделать резюме</button>
     <div id="resumeBox" hidden>
+      <div class="notice" id="resumeVac"></div>
       <pre id="resume"></pre>
       <button class="chip" id="copy">📋 Скопировать</button> <span class="small" id="copied"></span>
     </div>
@@ -460,11 +465,29 @@ function card(m) {
   </div>`;
 }
 
-document.getElementById('find').onclick = () => {
+// Не отмечено время: подсвечиваем пункт 1 и прокручиваем к нему
+const TIME_MSG = 'Отметь, когда ты свободен от учёбы (или укажи свои дни и время) — без этого не подобрать вакансии.';
+function needTime() {
+  const st = document.getElementById('step1');
+  st.classList.add('need');
+  document.getElementById('err1').textContent = TIME_MSG;
+  document.getElementById('err').textContent = TIME_MSG;
+  st.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function clearNeedTime() {
+  document.getElementById('step1').classList.remove('need');
+  document.getElementById('err1').textContent = '';
+  document.getElementById('err').textContent = '';
+}
+['slots', 'days'].forEach(id => document.getElementById(id).addEventListener('click', clearNeedTime));
+['tFrom', 'tTo'].forEach(id => document.getElementById(id).addEventListener('input', clearNeedTime));
+
+document.getElementById('find').onclick = () => showVacancies(true);
+
+function showVacancies(scroll) {
   const s = readStudent();
-  const err = document.getElementById('err');
-  if (!s.slots.size) { err.textContent = 'Отметь, когда ты свободен, или укажи свои дни и время.'; return; }
-  err.textContent = '';
+  if (!s.slots.size) { needTime(); return -1; }
+  clearNeedTime();
   const all = VACANCIES.map(v => matchVacancy(v, s)).filter(Boolean).sort((a, b) => b.score - a.score);
   const fit = all.filter(m => !m.missingHard.length);
   const almost = all.filter(m => m.missingHard.length);
@@ -483,8 +506,10 @@ document.getElementById('find').onclick = () => {
     <div class="chips">${rabotaLinks(s).map(([t, u]) => `<a class="chip" href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} →</a>`).join('')}</div></div>`;
   document.getElementById('list').innerHTML = html;
   const res = document.getElementById('results');
-  res.hidden = false; res.scrollIntoView({ behavior: 'smooth' });
-};
+  res.hidden = false;
+  if (scroll) res.scrollIntoView({ behavior: 'smooth' });
+  return fit.length;
+}
 
 // ---- Резюме ----
 document.getElementById('makeResume').onclick = () => {
@@ -519,6 +544,19 @@ document.getElementById('makeResume').onclick = () => {
   document.getElementById('resume').textContent = out;
   document.getElementById('resumeBox').hidden = false;
   document.getElementById('copied').textContent = '';
+
+  // Вместе с резюме сразу подбираем вакансии (после теста: Марго не увидела вакансий)
+  const rv = document.getElementById('resumeVac');
+  if (!s.slots.size) {
+    rv.innerHTML = '<span>⚠ Вакансии пока не подобраны: отметь в пункте 1, когда ты свободен.</span>' +
+      '<button type="button" class="chip" id="goStep1">Отметить время ↑</button>';
+    document.getElementById('goStep1').onclick = needTime;
+  } else {
+    const n = showVacancies(false);
+    rv.innerHTML = `<span>✓ Под твоё время подходит вакансий: <b>${n}</b></span>` +
+      '<button type="button" class="chip" id="goRes">Показать вакансии ↑</button>';
+    document.getElementById('goRes').onclick = () => document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  }
 };
 
 document.getElementById('copy').onclick = async () => {
