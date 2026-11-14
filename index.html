@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Работа под учёбу</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5d6675;
+    --line: #dfe3e8; --accent: #2f6fde; --accent-text: #ffffff;
+    --ok: #1f8a4c; --warn: #b26a00; --bad: #c0392b; --chip: #eef2f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171c; --card: #1d2128; --text: #e7eaef; --muted: #9aa3b2;
+      --line: #313743; --accent: #5b8ff0; --accent-text: #0e1116;
+      --ok: #4cc386; --warn: #e0a440; --bad: #ef7b6e; --chip: #262b34;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171c; --card: #1d2128; --text: #e7eaef; --muted: #9aa3b2;
+    --line: #313743; --accent: #5b8ff0; --accent-text: #0e1116;
+    --ok: #4cc386; --warn: #e0a440; --bad: #ef7b6e; --chip: #262b34;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding-block: 16px;
+         padding-left: max(16px, env(safe-area-inset-left, 0px));
+         padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .vac, .vac * { overflow-wrap: anywhere; }
+  h1 { font-size: 1.5rem; margin: 8px 0 4px; }
+  h2 { font-size: 1.1rem; margin: 0 0 10px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+            padding: 16px; margin-bottom: 14px; }
+  label.f { display: block; font-weight: 600; margin: 10px 0 6px; }
+  .hint { color: var(--muted); font-size: .88rem; font-weight: 400; }
+  .add { display: flex; gap: 8px; margin-top: 10px; }
+  .add input { flex: 1; min-width: 0; }
+  .add .chip { white-space: nowrap; }
+  select, input[type=text], input[type=time], textarea {
+    width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--card); color: var(--text); font: inherit; }
+  textarea { min-height: 90px; resize: vertical; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 1px solid var(--line); background: var(--chip); color: var(--text);
+          border-radius: 999px; padding: 7px 12px; font: inherit; cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+  .check { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  button.main { width: 100%; margin-top: 16px; padding: 13px; border: 0; border-radius: 10px;
+                background: var(--accent); color: var(--accent-text); font: inherit; font-weight: 700; cursor: pointer; }
+  .err { color: var(--bad); margin-top: 8px; min-height: 1em; }
+  .vac { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-top: 10px; }
+  .vac h3 { margin: 0 0 2px; font-size: 1rem; }
+  .vac .meta { color: var(--muted); font-size: .9rem; }
+  .vac ul { margin: 8px 0 8px; padding-left: 0; list-style: none; font-size: .92rem; }
+  .vac li.ok::before { content: "✓ "; color: var(--ok); font-weight: 700; }
+  .vac li.warn::before { content: "⚠ "; color: var(--warn); }
+  .vac li.bad::before { content: "✗ "; color: var(--bad); font-weight: 700; }
+  .vac a { color: var(--accent); font-weight: 600; }
+  .vac.dim { opacity: .7; }
+  a.chip { text-decoration: none; display: inline-block; }
+  .more { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .more h3 { margin: 0 0 4px; font-size: 1rem; }
+  .count { font-weight: 700; }
+  pre#resume { white-space: pre-wrap; background: var(--chip); border-radius: 8px; padding: 12px;
+               font: 14px/1.5 ui-monospace, Consolas, monospace; }
+  .small { font-size: .85rem; color: var(--muted); }
+  details summary { cursor: pointer; color: var(--accent); margin-top: 10px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🎓 Работа под учёбу</h1>
+  <p class="sub">Отметь, когда ты свободен от пар и что умеешь. Покажем только вакансии, которые можно совмещать с учёбой, и соберём резюме.</p>
+
+  <section>
+    <h2>1. Где и когда ты можешь работать</h2>
+    <label class="f" for="city">Город</label>
+    <input type="text" id="city" list="cityList" placeholder="Начни вводить, например: Минск (пусто — любой город)" autocomplete="off">
+    <datalist id="cityList"></datalist>
+    <div class="small" id="cityHint"></div>
+    <label class="check"><input type="checkbox" id="remoteOnly"> Только удалённо</label>
+
+    <label class="f">Когда ты свободен от учёбы? <span class="hint">(можно несколько)</span></label>
+    <div class="chips" id="slots"></div>
+
+    <label class="f">Или укажи своё время <span class="hint">(дни и часы, когда точно свободен)</span></label>
+    <div class="chips" id="days"></div>
+    <div class="row">
+      <div><label class="f" for="tFrom">с</label><input type="time" id="tFrom"></div>
+      <div><label class="f" for="tTo">до</label><input type="time" id="tTo"></div>
+    </div>
+    <div class="small" id="timeHint"></div>
+
+    <label class="f" for="maxShift">Сколько часов подряд можешь работать? <span class="hint">(если указал своё время — посчитаем сами)</span></label>
+    <select id="maxShift">
+      <option value="3">до 3 часов</option>
+      <option value="5" selected>до 5 часов</option>
+      <option value="8">до 8 часов</option>
+      <option value="12">полный день (до 12 часов)</option>
+    </select>
+  </section>
+
+  <section>
+    <h2>2. Что ты умеешь</h2>
+    <p class="small" style="margin-top:0">Не знаешь, что написать в навыках? Просто нажми то, что про тебя.</p>
+    <div class="chips" id="skills"></div>
+    <div class="add">
+      <input type="text" id="skillsIn" placeholder="Своё умение: Excel, фотошоп, готовка…">
+      <button type="button" class="chip" id="skillsAdd">+ Добавить</button>
+    </div>
+
+    <label class="f">Что у тебя есть</label>
+    <div class="chips" id="has"></div>
+    <div class="add">
+      <input type="text" id="hasIn" placeholder="Своё: велосипед, ноутбук, сертификат…">
+      <button type="button" class="chip" id="hasAdd">+ Добавить</button>
+    </div>
+
+    <label class="f">Где и кем ты работал(а) <span class="hint">(подработки, практика, волонтёрство)</span></label>
+    <div class="chips" id="jobs"></div>
+    <div class="add">
+      <input type="text" id="jobsIn" placeholder="Например: курьер Яндекс Еды, лето 2025">
+      <button type="button" class="chip" id="jobsAdd">+ Добавить</button>
+    </div>
+    <button class="main" id="find">Подобрать вакансии</button>
+    <div class="err" id="err"></div>
+  </section>
+
+  <section id="results" hidden>
+    <h2>Вакансии, которые совмещаются с учёбой</h2>
+    <div id="list"></div>
+    <p class="small">В базе 68 вакансий без опыта с rabota.by (собраны 14.11.2026: гибкий график, после 16:00, выходные, 4–6 ч, подработка, удалённо). Перед откликом проверь, что вакансия ещё открыта.</p>
+  </section>
+
+  <section>
+    <h2>3. Резюме за минуту</h2>
+    <p class="small" style="margin-top:0">Навыки и время возьмём из пунктов выше. Добавь пару строк о себе.</p>
+    <div class="row">
+      <div><label class="f" for="name">Имя и фамилия</label><input type="text" id="name"></div>
+      <div><label class="f" for="contact">Телефон или Telegram</label><input type="text" id="contact"></div>
+    </div>
+    <div class="row">
+      <div><label class="f" for="uni">Университет</label><input type="text" id="uni" placeholder="например, БГУ"></div>
+      <div><label class="f" for="spec">Специальность, курс</label><input type="text" id="spec" placeholder="например, экономика, 2 курс"></div>
+    </div>
+    <label class="f" for="exp">Опыт и проекты <span class="hint">(нет работы? это тоже опыт)</span></label>
+    <textarea id="exp" placeholder="Каждый пункт с новой строки. Например:
+Курсовой проект: сайт для кофейни (Figma)
+Волонтёр на городском марафоне
+Летняя подработка промоутером"></textarea>
+    <button class="main" id="makeResume">Сделать резюме</button>
+    <div id="resumeBox" hidden>
+      <pre id="resume"></pre>
+      <button class="chip" id="copy">📋 Скопировать</button> <span class="small" id="copied"></span>
+    </div>
+  </section>
+</main>
+
+<script src="vacancies-extra.js"></script>
+<script>
+// ---- Справочники ----
+const SLOTS = [
+  { id: 'day', label: 'Будни днём' },
+  { id: 'evening', label: 'Будни вечером (после пар)' },
+  { id: 'weekend', label: 'Выходные' },
+  { id: 'night', label: 'Ночью' },
+];
+const SKILLS = [
+  { id: 'talk', label: 'Общение с людьми' },
+  { id: 'sales', label: 'Продажи' },
+  { id: 'care', label: 'Внимательность, аккуратность' },
+  { id: 'fit', label: 'Физическая выносливость' },
+  { id: 'hands', label: 'Работа руками' },
+  { id: 'kids', label: 'Работа с детьми' },
+  { id: 'creative', label: 'Креативность, актёрство' },
+  { id: 'draw', label: 'Рисование' },
+  { id: 'video', label: 'Съёмка и монтаж видео' },
+  { id: 'smm', label: 'SMM, соцсети' },
+  { id: 'eng', label: 'Английский (B1+)' },
+];
+const HAS = [
+  { id: 'carB', label: 'Права категории B' },
+  { id: 'ipad', label: 'iPad + Apple Pencil' },
+  { id: 'artEdu', label: 'Художественное образование' },
+  { id: 'portfolio', label: 'Портфолио' },
+  { id: 'sanbook', label: 'Санитарная книжка' },
+];
+
+// ---- Вакансии: реальные данные с rabota.by на 14.11.2026 ----
+// slots: когда можно работать (по тексту графика вакансии)
+// minShift: минимальная смена в часах (если «по договорённости» — 2)
+// needs: требования; hard=true — без этого не возьмут
+const VACANCIES = [
+  { title: 'Пеший курьер', company: 'ООО Техюнит', city: 'Минск', salary: '1285–4187 Br/мес',
+    url: 'https://hh.ru/vacancy/138914202', remote: false, slots: ['day','evening','weekend','night'], minShift: 2,
+    schedule: '«Выходите тогда, когда свободны: между парами, вечером, в выходные»; смены от 2 ч',
+    skills: ['talk','sales','care','fit'], needs: [] },
+  { title: 'Сотрудник доставки (пеший формат)', company: 'ООО МенюКлик', city: 'Минск', salary: '1330–4250 Br/мес',
+    url: 'https://rabota.by/vacancy/139352565', remote: false, slots: ['day','evening','weekend','night'], minShift: 2,
+    schedule: 'свободный график, смены от 2 ч, есть вечерние и ночные',
+    skills: ['care','fit'], needs: [] },
+  { title: 'Специалист по доставке на велосипеде', company: 'ООО МенюКлик', city: 'Минск', salary: '1320–4210 Br/мес',
+    url: 'https://rabota.by/vacancy/139307383', remote: false, slots: ['day','evening','weekend','night'], minShift: 2,
+    schedule: '6/1, 5/2, 4/4 и др.; смены от 2 ч, есть вечерние и ночные',
+    skills: ['fit'], needs: [] },
+  { title: 'Продавец-консультант на 0,5 ставки (Incanto)', company: 'ООО Инканто Ритейл', city: 'Минск', salary: '800–1100 Br/мес',
+    url: 'https://rabota.by/vacancy/139155139', remote: false, slots: ['day','weekend'], minShift: 6,
+    schedule: '5/2 или свободный; смены 6–8 ч',
+    skills: ['talk','sales','care'], needs: [] },
+  { title: 'Преподаватель в художественную студию', company: 'ИП Акопян Л. Л.', city: 'Минск', salary: '45–50 Br за занятие',
+    url: 'https://rabota.by/vacancy/139028278', remote: false, slots: ['day','weekend'], minShift: 4,
+    schedule: '5/2, по выходным или свободный; 4–8 ч или по договорённости',
+    skills: ['draw','talk','creative'], needs: [{ id: 'artEdu', label: 'художественное образование', hard: true }] },
+  { title: 'Контент-креатор / иллюстратор', company: 'ArtWorkout', city: 'Минск', salary: '300–2000 $/мес',
+    url: 'https://hh.ru/vacancy/139466100', remote: true, slots: ['day','evening','weekend','night'], minShift: 5,
+    schedule: 'удалённо, свободный график, 5 ч',
+    skills: ['draw','video','eng'], needs: [{ id: 'ipad', label: 'iPad + Apple Pencil', hard: true }] },
+  { title: 'SMM-специалист / контент-мейкер', company: 'ООО НСЛайт', city: 'Брест', salary: '700–900 Br/мес',
+    url: 'https://rabota.by/vacancy/139010397', remote: true, slots: ['day','evening','weekend','night'], minShift: 2,
+    schedule: 'удалённо, свободный график, часы по договорённости',
+    skills: ['smm','video','creative'], needs: [{ id: 'portfolio', label: 'портфолио', hard: true }] },
+  { title: 'Актёр (аниматор) в квест / администратор', company: 'ИП Атрашкевич А. Н.', city: 'Минск', salary: '850–1600 Br/мес',
+    url: 'https://rabota.by/vacancy/139021440', remote: false, slots: ['evening','weekend','night'], minShift: 2,
+    schedule: 'по выходным, свободный и др.; смены от 2 ч, есть вечерние',
+    skills: ['creative','talk'], needs: [] },
+  { title: 'Актёр / оператор квест-комнаты', company: 'ООО Блэк рум', city: 'Минск', salary: 'не указана',
+    url: 'https://rabota.by/vacancy/138887459', remote: false, slots: ['evening','weekend','night'], minShift: 2,
+    schedule: 'свободный; вечерние или ночные смены, по договорённости',
+    skills: ['creative'], needs: [] },
+  { title: 'Администратор-инструктор «Спорт парк»', company: 'ИП Бондаренко А. В.', city: 'Минск', salary: '500–1000 Br/мес',
+    url: 'https://rabota.by/vacancy/139255219', remote: false, slots: ['evening','weekend'], minShift: 2,
+    schedule: 'будни во второй половине дня, выходные с 10:00; 4–8 ч или по договорённости',
+    skills: ['kids','talk'], needs: [] },
+  { title: 'Промоутер по активным продажам (А1)', company: 'А1 «Начало карьеры»', city: 'Молодечно', salary: 'от 1500 Br/мес',
+    url: 'https://rabota.by/vacancy/118127015', remote: false, slots: ['day','evening','weekend'], minShift: 4,
+    schedule: '5/2 или свободный, 4–5 ч; «Ты студент?», можно пройти учебную практику',
+    skills: ['sales','talk'], needs: [] },
+  { title: 'Начинающий специалист по продажам', company: 'ООО Строймир Восток', city: 'Могилёв', salary: '800–2000 Br/мес',
+    url: 'https://rabota.by/vacancy/139439102', remote: false, slots: ['evening','weekend'], minShift: 2,
+    schedule: '«График после пар»: 2–3 ч, лучше с 18:00 до 21:00, от 4 дней в неделю',
+    skills: ['sales','talk'], needs: [] },
+  { title: 'Специалист по прогулкам', company: 'ИП Салихов Р. С.', city: 'Витебск', salary: '1200–1800 Br/мес',
+    url: 'https://hh.ru/vacancy/137896047', remote: false, slots: ['day','evening','weekend'], minShift: 2,
+    schedule: 'много вариантов графика, смены от 2 ч; «легко совмещать с учёбой»',
+    skills: ['fit','care'], needs: [] },
+  { title: 'Обслуживание кофейных автоматов', company: 'ООО Саунд консалт', city: 'Минск', salary: 'от 600 Br/мес',
+    url: 'https://rabota.by/vacancy/139050549', remote: false, slots: ['day','weekend'], minShift: 8,
+    schedule: '2/2, свободный и др.; смена 8 ч',
+    skills: ['care'], needs: [{ id: 'carB', label: 'права категории B', hard: true }] },
+  { title: 'Пекарь-кондитер (Cinnabon)', company: 'ООО Кофе и сладости', city: 'Минск', salary: '1800–2000 Br/мес',
+    url: 'https://rabota.by/vacancy/139355172', remote: false, slots: ['day','weekend'], minShift: 2,
+    schedule: '3/3, 2/2, по выходным, свободный; 12 ч или по договорённости',
+    skills: ['hands','talk'], needs: [{ id: 'sanbook', label: 'санитарная книжка (можно оформить)', hard: false }] },
+  { title: 'Ночной переплётчик в типографию', company: 'УП Донарит', city: 'Минск', salary: 'до 2000 Br/мес',
+    url: 'https://rabota.by/vacancy/139257270', remote: false, slots: ['evening','night'], minShift: 2,
+    schedule: '4/4, 4/3, 4/2 и др.; вечерние или ночные смены, 11 ч или по договорённости',
+    skills: ['hands','care'], needs: [{ id: 'binding', label: 'в требованиях: навыки переплётных работ', hard: false }] },
+  { title: 'Сборщик-комплектовщик', company: 'ООО Вудари', city: 'Минск', salary: '1800–3200 Br/мес',
+    url: 'https://rabota.by/vacancy/139454451', remote: false, slots: ['day'], minShift: 8,
+    schedule: '5/2 или свободный; смена 8 ч',
+    skills: ['care','hands'], needs: [] },
+  { title: 'Грузчик', company: 'ООО Рабочий Кадровый Сервис', city: 'Минск', salary: '13–20 Br/час',
+    url: 'https://rabota.by/vacancy/139410226', remote: false, slots: ['day','evening','weekend','night'], minShift: 2,
+    schedule: 'свободный; смены от 2 до 11 ч, есть вечерние и ночные',
+    skills: ['fit'], needs: [{ id: 'orders', label: 'не меньше 15 заказов в месяц', hard: false }] },
+];
+
+// + 50 вакансий, собранных автоматически (файл vacancies-extra.js)
+VACANCIES.push(...(window.EXTRA_VACANCIES || []));
+
+// ---- Чипы ----
+function renderChips(containerId, items) {
+  const box = document.getElementById(containerId);
+  items.forEach(it => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = it.label;
+    b.dataset.id = it.id; b.setAttribute('aria-pressed', 'false');
+    b.onclick = () => b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    box.appendChild(b);
+  });
+}
+const picked = id => new Set([...document.querySelectorAll('#' + id + ' .chip[aria-pressed="true"]')].map(b => b.dataset.id));
+const labelOf = (list, id) => (list.find(x => x.id === id) || {}).label;
+const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map((d, i) => ({ id: String(i), label: d }));
+const JOBS = [];
+renderChips('slots', SLOTS); renderChips('skills', SKILLS); renderChips('has', HAS); renderChips('days', DAYS);
+
+// ---- Свои умения / что есть / опыт ----
+let customN = 0;
+function setupCustom(group, list) {
+  const input = document.getElementById(group + 'In');
+  const add = () => {
+    const label = input.value.trim();
+    if (!label) return;
+    if (list.some(x => x.label.toLowerCase() === label.toLowerCase())) { input.value = ''; return; }
+    const item = { id: 'c' + (++customN), label, custom: true };
+    list.push(item);
+    renderChips(group, [item]);
+    document.querySelector(`#${group} .chip[data-id="${item.id}"]`).setAttribute('aria-pressed', 'true');
+    input.value = ''; input.focus();
+  };
+  document.getElementById(group + 'Add').onclick = add;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); add(); } });
+}
+setupCustom('skills', SKILLS); setupCustom('has', HAS); setupCustom('jobs', JOBS);
+
+// Совпадение своего текста с вакансией: по началу слов («курьер» ↔ «Пеший курьер»)
+const STOP = ['работа','работал','работала','опыт','умею','знаю','есть','лето','зима'];
+function textMatches(text, hay) {
+  hay = hay.toLowerCase().replace(/ё/g, 'е');
+  return text.toLowerCase().replace(/ё/g, 'е').split(/[^a-zа-я0-9]+/)
+    .filter(w => w.length >= 4 && !STOP.includes(w))
+    .some(w => hay.includes(w.slice(0, Math.max(4, w.length - 2))));
+}
+
+// ---- Своё время ----
+function customTime() {
+  const days = [...picked('days')].map(Number);
+  const f = document.getElementById('tFrom').value, t = document.getElementById('tTo').value;
+  if (!days.length && !(f && t)) return null;
+  const useDays = days.length ? days : [0,1,2,3,4,5,6];
+  const slots = new Set();
+  let hours = null, text = '';
+  const weekdays = useDays.some(d => d < 5), weekend = useDays.some(d => d >= 5);
+  const dayText = days.length ? days.map(d => DAYS[d].label).join(', ') : 'каждый день';
+  if (f && t) {
+    const toMin = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+    let a = toMin(f), b = toMin(t);
+    if (b <= a) b += 1440;                       // через полночь
+    hours = Math.round((b - a) / 60 * 10) / 10;
+    const over = (x, y) => a < y && b > x;
+    const night = over(22 * 60, 30 * 60) || a < 6 * 60;
+    if (weekdays && over(8 * 60, 17 * 60)) slots.add('day');
+    if (weekdays && over(17 * 60, 22 * 60)) slots.add('evening');
+    if (weekend) slots.add('weekend');
+    if (night) slots.add('night');
+    text = `${dayText} с ${f} до ${t}`;
+  } else {
+    if (weekdays) { slots.add('day'); slots.add('evening'); }
+    if (weekend) slots.add('weekend');
+    text = dayText;
+  }
+  return { slots, hours, text };
+}
+function updateTimeHint() {
+  const c = customTime();
+  document.getElementById('timeHint').textContent = c
+    ? `Понял: ${c.text}${c.hours ? ` (${c.hours} ч подряд)` : ''} → ${[...c.slots].map(id => labelOf(SLOTS, id).toLowerCase()).join(', ')}`
+    : '';
+}
+document.getElementById('days').addEventListener('click', updateTimeHint);
+['tFrom', 'tTo'].forEach(id => document.getElementById(id).addEventListener('input', updateTimeHint));
+
+// ---- Город: ввод с подсказками ----
+const norm = t => t.trim().toLowerCase().replace(/ё/g, 'е').replace(/^г\.?\s*/, '');
+// Коды городов на rabota.by (проверены по выдаче сайта 14.11.2026)
+const AREA = { 'Минск': 1002, 'Гомель': 1003, 'Могилёв': 1004, 'Витебск': 1005, 'Гродно': 1006, 'Брест': 1007 };
+const CITIES = [...new Set(VACANCIES.map(v => v.city))].sort();            // есть в нашей базе
+const ALL_CITIES = [...new Set(CITIES.concat(Object.keys(AREA)))].sort();  // + можно искать на rabota.by
+document.getElementById('cityList').innerHTML = ALL_CITIES.map(c => `<option value="${c}">`).join('');
+function cityCount(c) { return VACANCIES.filter(v => v.city === c).length; }
+const DEFAULT_CITY_HINT = 'Подсказки: ' + ALL_CITIES.join(', ') + '. Можно ввести любой город.';
+document.getElementById('city').addEventListener('input', e => {
+  const q = norm(e.target.value);
+  const hint = document.getElementById('cityHint');
+  if (!q) { hint.textContent = DEFAULT_CITY_HINT; return; }
+  const found = ALL_CITIES.filter(c => norm(c).startsWith(q));
+  hint.textContent = found.length
+    ? 'Найдено: ' + found.map(c => cityCount(c) ? `${c} (в базе: ${cityCount(c)})` : `${c} (поиск на rabota.by)`).join(', ')
+    : 'Такого города нет в подсказках — поищем по всей Беларуси на rabota.by и покажем удалённые.';
+});
+document.getElementById('cityHint').textContent = DEFAULT_CITY_HINT;
+
+// ---- Ссылки на поиск по всему rabota.by с фильтрами студента ----
+function rabotaLinks(s) {
+  const area = AREA[s.city] || 16;   // 16 — вся Беларусь
+  const url = p => 'https://rabota.by/search/vacancy?' + new URLSearchParams(Object.assign({ area, experience: 'noExperience' }, p));
+  const L = [];
+  if (!s.remoteOnly) {
+    if (s.slots.has('evening')) L.push(['После 16:00 (после пар)', url({ part_time: 'start_after_sixteen' })]);
+    if (s.slots.has('weekend')) L.push(['Только по выходным', url({ part_time: 'only_saturday_and_sunday' })]);
+    if (s.maxShift <= 6) L.push(['Смены 4–6 часов', url({ part_time: 'from_four_to_six_hours_in_a_day' })]);
+    if (s.slots.has('night')) L.push(['Сменный график', url({ schedule: 'shift' })]);
+    L.push(['Гибкий график', url({ schedule: 'flexible' })]);
+  }
+  L.push(['Удалённо', url({ schedule: 'remote' })]);
+  const words = [...s.skills, ...s.jobs]
+    .map(id => SKILLS.concat(JOBS).find(x => x.id === id))
+    .filter(x => x && x.custom).map(x => x.label.split(/[,(]/)[0].trim()).filter(w => w.length >= 3);
+  [...new Set(words)].slice(0, 4).forEach(w => L.push([`По запросу «${w}»`, url({ text: w })]));
+  return L;
+}
+
+// ---- Подбор ----
+function resolveCity() {
+  const q = norm(document.getElementById('city').value);
+  if (!q) return 'any';
+  const exact = ALL_CITIES.find(c => norm(c) === q);
+  if (exact) return exact;
+  const starts = ALL_CITIES.filter(c => norm(c).startsWith(q));
+  return starts.length === 1 ? starts[0] : document.getElementById('city').value.trim();
+}
+function readStudent() {
+  const ct = customTime();
+  const slots = picked('slots');
+  if (ct) ct.slots.forEach(x => slots.add(x));
+  return {
+    city: resolveCity(),
+    remoteOnly: document.getElementById('remoteOnly').checked,
+    slots, skills: picked('skills'), has: picked('has'), jobs: picked('jobs'),
+    maxShift: ct && ct.hours ? ct.hours : Number(document.getElementById('maxShift').value),
+    timeText: ct ? ct.text : '',
+  };
+}
+
+function matchVacancy(v, s) {
+  if (s.remoteOnly && !v.remote) return null;
+  if (!v.remote && s.city !== 'any' && v.city !== s.city) return null;
+  const slotHits = v.slots.filter(x => s.slots.has(x));
+  if (!slotHits.length) return null;            // не совпадает время
+  if (v.minShift > s.maxShift) return null;     // смена длиннее, чем студент может
+  const hay = v.title + ' ' + v.skills.map(k => labelOf(SKILLS, k)).join(' ');
+  const skillHits = v.skills.filter(k => s.skills.has(k));
+  const customHits = [...s.skills, ...s.jobs]
+    .map(id => SKILLS.concat(JOBS).find(x => x.id === id))
+    .filter(x => x && x.custom && textMatches(x.label, hay)).map(x => x.label);
+  const customHas = [...s.has].map(id => HAS.find(x => x.id === id)).filter(x => x && x.custom);
+  const satisfied = n => s.has.has(n.id) || customHas.some(x => textMatches(x.label, n.label));
+  const missingHard = v.needs.filter(n => n.hard && !satisfied(n));
+  const softNotes = v.needs.filter(n => !n.hard && !satisfied(n));
+  const score = (skillHits.length + customHits.length) * 2 + slotHits.length - missingHard.length * 10;
+  return { v, slotHits, skillHits, customHits, missingHard, softNotes, score };
+}
+
+function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+function card(m) {
+  const v = m.v;
+  const lines = [];
+  lines.push(`<li class="ok">время: ${m.slotHits.map(id => labelOf(SLOTS, id).toLowerCase()).join(', ')}${v.remote ? ' (удалённо)' : ''}</li>`);
+  lines.push(`<li class="ok">график: ${esc(v.schedule)}</li>`);
+  if (v.studentNote) lines.push(`<li class="ok">в вакансии: «${esc(v.studentNote)}»</li>`);
+  if (m.skillHits.length) lines.push(`<li class="ok">твои навыки: ${m.skillHits.map(id => labelOf(SKILLS, id).toLowerCase()).join(', ')}</li>`);
+  if (m.customHits.length) lines.push(`<li class="ok">твой опыт/умения: ${m.customHits.map(esc).join(', ')}</li>`);
+  m.missingHard.forEach(n => lines.push(`<li class="bad">нужно: ${esc(n.label)}</li>`));
+  m.softNotes.forEach(n => lines.push(`<li class="warn">${esc(n.label)}</li>`));
+  return `<div class="vac${m.missingHard.length ? ' dim' : ''}">
+    <h3>${esc(v.title)}</h3>
+    <div class="meta">${esc(v.company)} · ${esc(v.city)}${v.remote ? ' · удалённо' : ''} · <b>${esc(v.salary)}</b></div>
+    <ul>${lines.join('')}</ul>
+    <a href="${v.url}" target="_blank" rel="noopener">Открыть вакансию на сайте →</a>
+  </div>`;
+}
+
+document.getElementById('find').onclick = () => {
+  const s = readStudent();
+  const err = document.getElementById('err');
+  if (!s.slots.size) { err.textContent = 'Отметь, когда ты свободен, или укажи свои дни и время.'; return; }
+  err.textContent = '';
+  const all = VACANCIES.map(v => matchVacancy(v, s)).filter(Boolean).sort((a, b) => b.score - a.score);
+  const fit = all.filter(m => !m.missingHard.length);
+  const almost = all.filter(m => m.missingHard.length);
+  let html = `<p class="count">Подходит: ${fit.length} из ${VACANCIES.length}${s.city !== 'any' ? ' · город: ' + esc(s.city) : ''}</p>`;
+  if (s.city !== 'any' && !CITIES.includes(s.city)) {
+    html += `<p class="small">В городе «${esc(s.city)}» пока нет вакансий в нашей базе — показаны только удалённые. Больше вакансий — по ссылкам на rabota.by ниже.</p>`;
+  }
+  html += fit.length ? fit.map(card).join('')
+    : '<p>Пока ничего не совпало. Попробуй отметить больше свободного времени или увеличить длину смены.</p>';
+  if (almost.length) {
+    html += `<details><summary>Ещё ${almost.length} подходят по времени, но нужно то, чего ты не отметил</summary>${almost.map(card).join('')}</details>`;
+  }
+  const where = s.city === 'any' || !AREA[s.city] ? 'по всей Беларуси' : esc(s.city);
+  html += `<div class="more"><h3>🔎 Искать по всему rabota.by</h3>
+    <p class="small">Откроется сайт с уже включёнными фильтрами: без опыта, ${where}, твоё время.</p>
+    <div class="chips">${rabotaLinks(s).map(([t, u]) => `<a class="chip" href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} →</a>`).join('')}</div></div>`;
+  document.getElementById('list').innerHTML = html;
+  const res = document.getElementById('results');
+  res.hidden = false; res.scrollIntoView({ behavior: 'smooth' });
+};
+
+// ---- Резюме ----
+document.getElementById('makeResume').onclick = () => {
+  const s = readStudent();
+  const val = id => document.getElementById(id).value.trim();
+  const skills = [...s.skills].map(id => labelOf(SKILLS, id));
+  const has = [...s.has].map(id => labelOf(HAS, id));
+  const times = [...s.slots].map(id => labelOf(SLOTS, id).toLowerCase());
+  const exp = [...s.jobs].map(id => labelOf(JOBS, id))
+    .concat(val('exp').split('\n').map(x => x.trim()).filter(Boolean));
+  const out = [
+    (val('name') || 'Имя Фамилия').toUpperCase(),
+    [s.city !== 'any' ? s.city : '', val('contact')].filter(Boolean).join(' · '),
+    '',
+    'ЦЕЛЬ',
+    'Подработка или стажировка с графиком, который совмещается с учёбой.',
+    '',
+    'ОБРАЗОВАНИЕ',
+    [val('uni') || 'Университет', val('spec')].filter(Boolean).join(', '),
+    '',
+    'НАВЫКИ',
+    skills.length ? skills.map(x => '• ' + x).join('\n') : '• (отметь навыки в пункте 2)',
+    has.length ? '\nДОПОЛНИТЕЛЬНО\n' + has.map(x => '• ' + x).join('\n') : '',
+    '',
+    'ОПЫТ И ПРОЕКТЫ',
+    exp.length ? exp.map(x => '• ' + x).join('\n') : '• Учебные проекты (добавь пару строк выше)',
+    '',
+    'ГОТОВНОСТЬ К РАБОТЕ',
+    (s.timeText ? 'Свободен(на): ' + s.timeText + '. '
+      : times.length ? 'Свободное время: ' + times.join(', ') + '. ' : '') + 'Смена до ' + s.maxShift + ' ч.',
+  ].join('\n').replace(/\n{3,}/g, '\n\n');
+  document.getElementById('resume').textContent = out;
+  document.getElementById('resumeBox').hidden = false;
+  document.getElementById('copied').textContent = '';
+};
+
+document.getElementById('copy').onclick = async () => {
+  const text = document.getElementById('resume').textContent;
+  try { await navigator.clipboard.writeText(text); document.getElementById('copied').textContent = 'Скопировано!'; }
+  catch (e) { document.getElementById('copied').textContent = 'Не получилось — выдели текст вручную.'; }
+};
+</script>
+</body>
+</html>
