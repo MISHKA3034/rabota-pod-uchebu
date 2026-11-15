@@ -76,6 +76,24 @@
                font: 14px/1.5 ui-monospace, Consolas, monospace; }
   .small { font-size: .85rem; color: var(--muted); }
   details summary { cursor: pointer; color: var(--accent); margin-top: 10px; }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 6px; }
+  .tools select { width: auto; max-width: 100%; }
+  .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .acts .chip { padding: 5px 10px; font-size: .9rem; }
+  .msg { width: 100%; min-height: 110px; margin-top: 8px; font-size: .92rem; }
+  .badge { display: inline-block; border-radius: 999px; padding: 2px 9px; font-size: .8rem; font-weight: 700;
+           border: 1px solid currentColor; margin-right: 6px; }
+  .b-ok { color: var(--ok); } .b-warn { color: var(--warn); } .b-bad { color: var(--bad); } .b-mute { color: var(--muted); }
+  .steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .steps .chip { font-size: .85rem; padding: 4px 10px; }
+  .vac dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 10px; margin: 8px 0; font-size: .9rem; }
+  .vac dt { color: var(--muted); } .vac dd { margin: 0; min-width: 0; }
+  @media (max-width: 520px) { .vac dl { grid-template-columns: 1fr; } .vac dd { margin-bottom: 4px; } }
+  @media print {
+    body * { visibility: hidden; }
+    #resume, #resume * { visibility: visible; }
+    #resume { position: absolute; left: 0; top: 0; background: none; font: 12pt/1.5 Georgia, serif; }
+  }
 </style>
 </head>
 <body>
@@ -140,6 +158,15 @@
 
   <section id="results" hidden>
     <h2>Вакансии, которые совмещаются с учёбой</h2>
+    <div class="tools">
+      <select id="sortBy" aria-label="Сортировка">
+        <option value="match">Сначала самые подходящие</option>
+        <option value="short">Сначала короткие смены</option>
+        <option value="student">Сначала где пишут про студентов</option>
+      </select>
+      <label class="check" style="margin:0"><input type="checkbox" id="onlyStudents"> Только где прямо пишут про студентов</label>
+    </div>
+    <div id="savedBox"></div>
     <div id="list"></div>
     <p class="small">В базе <span id="vacTotal">—</span> вакансий без опыта с rabota.by (собраны 14–15.11.2026: гибкий график, после 16:00, выходные, 4–6 ч, подработка, удалённо). Перед откликом проверь, что вакансия ещё открыта.</p>
   </section>
@@ -164,8 +191,39 @@
     <div id="resumeBox" hidden>
       <div class="notice" id="resumeVac"></div>
       <pre id="resume"></pre>
-      <button class="chip" id="copy">📋 Скопировать</button> <span class="small" id="copied"></span>
+      <div class="acts">
+        <button type="button" class="chip" id="copy">📋 Скопировать</button>
+        <button type="button" class="chip" id="toWord">⬇ Скачать в Word</button>
+        <button type="button" class="chip" id="toPrint">🖨 Распечатать</button>
+        <span class="small" id="copied"></span>
+      </div>
     </div>
+    <p class="small">Данные анкеты сохраняются только в этом браузере, чтобы не вводить их заново.</p>
+  </section>
+
+  <section id="interns">
+    <h2>4. Стажировки и практика</h2>
+    <p class="small" style="margin-top:0">Программы компаний Беларуси (проверены 15.11.2026). Проверим, подходишь ли ты по условиям, составим письмо и напомним о сроках.</p>
+    <div class="row">
+      <div><label class="f" for="course">Курс</label>
+        <select id="course">
+          <option value="">не указан</option>
+          <option value="1">1 курс</option><option value="2">2 курс</option><option value="3">3 курс</option>
+          <option value="4">4 курс</option><option value="5">5 курс</option><option value="6">6 курс</option>
+          <option value="grad">Выпускник</option>
+        </select></div>
+      <div><label class="f" for="eduForm">Форма обучения</label>
+        <select id="eduForm">
+          <option value="day">Дневная (очная)</option>
+          <option value="part">Заочная или вечерняя</option>
+        </select></div>
+    </div>
+    <label class="f">Направление учёбы <span class="hint">(можно несколько)</span></label>
+    <div class="chips" id="dirs"></div>
+    <p class="small">Вуз, специальность, навыки и время берутся из пунктов 1–3.</p>
+    <button class="main" id="checkInterns">Проверить, куда я подхожу</button>
+    <div id="internList"></div>
+    <div id="tracker"></div>
   </section>
 </main>
 
@@ -448,6 +506,39 @@ function matchVacancy(v, s) {
 
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
+// Хранилище в браузере (может быть недоступно — тогда просто работаем без него)
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('rpu.' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('rpu.' + k, JSON.stringify(v)); } catch (e) {} },
+};
+function downloadFile(name, type, content) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+const isHeading = l => /^[А-ЯЁA-Z ]{4,}$/.test(l.trim());
+async function copyText(text, statusEl) {
+  try { await navigator.clipboard.writeText(text); if (statusEl) statusEl.textContent = 'Скопировано!'; }
+  catch (e) { if (statusEl) statusEl.textContent = 'Не получилось — выдели текст вручную.'; }
+}
+
+// Сообщение работодателю под конкретную вакансию (как готовые вопросы на rabota.by)
+function employerMessage(v) {
+  const s = readStudent();
+  const val = id => document.getElementById(id).value.trim();
+  const study = [val('uni'), val('spec')].filter(Boolean).join(', ');
+  const time = s.timeText || [...s.slots].map(id => labelOf(SLOTS, id).toLowerCase()).join(', ');
+  return [
+    'Здравствуйте!',
+    `Меня зовут ${val('name') || '[имя]'}, я студент(ка)${study ? ' (' + study + ')' : ''}. Меня заинтересовала вакансия «${v.title}».`,
+    time ? `Могу работать: ${time}, смены до ${s.maxShift} ч.` : '',
+    'Подскажите, пожалуйста, вакансия ещё актуальна? Можно ли совмещать её с учёбой?',
+    val('contact') ? `Мои контакты: ${val('contact')}.` : '',
+    'Спасибо!',
+  ].filter(Boolean).join('\n');
+}
+
 function card(m) {
   const v = m.v;
   const lines = [];
@@ -463,8 +554,59 @@ function card(m) {
     <div class="meta">${esc(v.company)} · ${esc(v.city)}${v.remote ? ' · удалённо' : ''} · <b>${esc(v.salary)}</b></div>
     <ul>${lines.join('')}</ul>
     <a href="${v.url}" target="_blank" rel="noopener">Открыть вакансию на сайте →</a>
+    ${vacActions(v)}
   </div>`;
 }
+function vacActions(v) {
+  const i = VACANCIES.indexOf(v);
+  const saved = store.get('saved', []).includes(v.url);
+  return `<div class="acts">
+    <button type="button" class="chip" data-act="save" data-i="${i}" aria-pressed="${saved}">${saved ? '⭐ Сохранено' : '☆ Сохранить'}</button>
+    <button type="button" class="chip" data-act="hide" data-i="${i}">Скрыть</button>
+    <button type="button" class="chip" data-act="msg" data-i="${i}">✉ Написать работодателю</button>
+  </div><div class="msgBox" data-for="${i}"></div>`;
+}
+function savedCard(v) {
+  return `<div class="vac"><h3>${esc(v.title)}</h3>
+    <div class="meta">${esc(v.company)} · ${esc(v.city)}${v.remote ? ' · удалённо' : ''} · <b>${esc(v.salary)}</b></div>
+    <div class="small">график: ${esc(v.schedule)}</div>
+    <a href="${v.url}" target="_blank" rel="noopener">Открыть вакансию на сайте →</a>${vacActions(v)}</div>`;
+}
+function renderSaved() {
+  const saved = store.get('saved', []);
+  const list = saved.map(u => VACANCIES.find(v => v.url === u)).filter(Boolean);
+  document.getElementById('savedBox').innerHTML = list.length
+    ? `<details open><summary>⭐ Сохранённые (${list.length})</summary>${list.map(savedCard).join('')}</details>` : '';
+}
+// Кнопки на карточках: сохранить / скрыть / сообщение работодателю
+document.getElementById('results').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'unhide') { store.set('hidden', []); showVacancies(false); updateFindCount(); return; }
+  const v = VACANCIES[Number(b.dataset.i)];
+  if (!v) return;
+  if (act === 'save') {
+    const s = store.get('saved', []);
+    store.set('saved', s.includes(v.url) ? s.filter(u => u !== v.url) : s.concat(v.url));
+    showVacancies(false);
+  } else if (act === 'hide') {
+    store.set('hidden', [...new Set(store.get('hidden', []).concat(v.url))]);
+    store.set('saved', store.get('saved', []).filter(u => u !== v.url));
+    showVacancies(false); updateFindCount();
+  } else if (act === 'msg') {
+    const box = b.closest('.vac').querySelector('.msgBox');
+    if (box.innerHTML) { box.innerHTML = ''; return; }
+    box.innerHTML = `<textarea class="msg" aria-label="Сообщение работодателю">${esc(employerMessage(v))}</textarea>
+      <div class="acts"><button type="button" class="chip" data-act="copymsg" data-i="${b.dataset.i}">📋 Скопировать сообщение</button>
+      <span class="small"></span></div>
+      <p class="small">Отправь его в отклике или в мессенджере работодателя на странице вакансии.</p>`;
+  } else if (act === 'copymsg') {
+    const box = b.closest('.msgBox');
+    copyText(box.querySelector('textarea').value, box.querySelector('.small'));
+  }
+});
+['sortBy', 'onlyStudents'].forEach(id => document.getElementById(id).addEventListener('change', () => showVacancies(false)));
 
 // Не отмечено время: подсвечиваем пункт 1 и прокручиваем к нему
 const TIME_MSG = 'Отметь, когда ты свободен от учёбы (или укажи свои дни и время) — без этого не подобрать вакансии.';
@@ -489,10 +631,21 @@ function showVacancies(scroll) {
   const s = readStudent();
   if (!s.slots.size) { needTime(); return -1; }
   clearNeedTime();
-  const all = VACANCIES.map(v => matchVacancy(v, s)).filter(Boolean).sort((a, b) => b.score - a.score);
+  const hidden = new Set(store.get('hidden', []));
+  const onlyStudents = document.getElementById('onlyStudents').checked;
+  const sortBy = document.getElementById('sortBy').value;
+  const cmp = {
+    match: (a, b) => b.score - a.score,
+    short: (a, b) => a.v.minShift - b.v.minShift || b.score - a.score,
+    student: (a, b) => (b.v.studentNote ? 1 : 0) - (a.v.studentNote ? 1 : 0) || b.score - a.score,
+  }[sortBy];
+  const all = VACANCIES.filter(v => !hidden.has(v.url) && (!onlyStudents || v.studentNote))
+    .map(v => matchVacancy(v, s)).filter(Boolean).sort(cmp);
   const fit = all.filter(m => !m.missingHard.length);
   const almost = all.filter(m => m.missingHard.length);
-  let html = `<p class="count">Подходит: ${fit.length} из ${VACANCIES.length}${s.city !== 'any' ? ' · город: ' + esc(s.city) : ''}</p>`;
+  renderSaved();
+  let html = `<p class="count">Подходит: ${fit.length} из ${VACANCIES.length}${s.city !== 'any' ? ' · город: ' + esc(s.city) : ''}${onlyStudents ? ' · только где пишут про студентов' : ''}</p>`;
+  if (hidden.size) html += `<p class="small">Скрыто вакансий: ${hidden.size}. <button type="button" class="chip" data-act="unhide">Показать скрытые</button></p>`;
   if (s.city !== 'any' && !CITIES.includes(s.city)) {
     html += `<p class="small">В городе «${esc(s.city)}» пока нет вакансий в нашей базе — показаны только удалённые. Больше вакансий — по ссылкам на rabota.by ниже.</p>`;
   }
@@ -542,7 +695,9 @@ document.getElementById('makeResume').onclick = () => {
     (s.timeText ? 'Свободен(на): ' + s.timeText + '. '
       : times.length ? 'Свободное время: ' + times.join(', ') + '. ' : '') + 'Смена до ' + s.maxShift + ' ч.',
   ].join('\n').replace(/\n{3,}/g, '\n\n');
-  document.getElementById('resume').textContent = out;
+  // Заголовки разделов жирным (просьба Марго: «больше форматирования»)
+  document.getElementById('resume').innerHTML = out.split('\n')
+    .map((l, i) => (i === 0 || isHeading(l)) && l.trim() ? `<b>${esc(l)}</b>` : esc(l)).join('\n');
   document.getElementById('resumeBox').hidden = false;
   document.getElementById('copied').textContent = '';
 
@@ -565,6 +720,58 @@ document.getElementById('copy').onclick = async () => {
   try { await navigator.clipboard.writeText(text); document.getElementById('copied').textContent = 'Скопировано!'; }
   catch (e) { document.getElementById('copied').textContent = 'Не получилось — выдели текст вручную.'; }
 };
+
+// ---- Резюме: Word и печать (просьба Леры и Марго из теста; у praca.by есть «Скачать в Word») ----
+document.getElementById('toWord').onclick = () => {
+  const lines = document.getElementById('resume').textContent.split('\n');
+  const body = lines.map((l, i) => {
+    if (!l.trim()) return '';
+    if (i === 0) return `<h1>${esc(l)}</h1>`;
+    if (isHeading(l)) return `<h3>${esc(l)}</h3>`;
+    return `<p>${esc(l)}</p>`;
+  }).join('\n');
+  const html = `<html><head><meta charset="utf-8"><style>
+    body{font-family:Calibri,Arial,sans-serif;font-size:11pt} h1{font-size:18pt;margin:0 0 4pt}
+    h3{font-size:11pt;letter-spacing:1pt;color:#2f6fde;border-bottom:1px solid #ccc;margin:14pt 0 4pt} p{margin:0 0 3pt}
+  </style></head><body>${body}</body></html>`;
+  downloadFile('Резюме.doc', 'application/msword', '﻿' + html);
+};
+document.getElementById('toPrint').onclick = () => window.print();
+
+// ---- Число подходящих вакансий прямо на кнопке (как «Показать вакансии 5391» у belmeta) ----
+let countTimer = null;
+function updateFindCount() {
+  clearTimeout(countTimer);
+  countTimer = setTimeout(() => {
+    const s = readStudent();
+    const btn = document.getElementById('find');
+    if (!s.slots.size) { btn.textContent = 'Подобрать вакансии'; return; }
+    const hidden = new Set(store.get('hidden', []));
+    const n = VACANCIES.filter(v => !hidden.has(v.url)).map(v => matchVacancy(v, s)).filter(m => m && !m.missingHard.length).length;
+    btn.textContent = `Подобрать вакансии (${n})`;
+  }, 120);
+}
+['step1', 'skills', 'has', 'jobs'].forEach(id => {
+  const el = document.getElementById(id).closest('section') || document.getElementById(id);
+  el.addEventListener('click', updateFindCount);
+  el.addEventListener('input', updateFindCount);
+  el.addEventListener('change', updateFindCount);
+});
+
+// ---- Профиль сохраняется в браузере (одни и те же данные не вводятся заново) ----
+const PROFILE_IDS = ['name', 'contact', 'uni', 'spec', 'exp', 'course', 'eduForm'];
+(function restoreProfile() {
+  const p = store.get('profile', {});
+  PROFILE_IDS.forEach(id => { if (p[id] != null) document.getElementById(id).value = p[id]; });
+})();
+PROFILE_IDS.forEach(id => document.getElementById(id).addEventListener('input', () => {
+  const p = {}; PROFILE_IDS.forEach(k => { p[k] = document.getElementById(k).value; });
+  store.set('profile', p);
+}));
+['course', 'eduForm'].forEach(id => document.getElementById(id).addEventListener('change', () => {
+  const p = store.get('profile', {}); p[id] = document.getElementById(id).value; store.set('profile', p);
+}));
 </script>
+<script src="internships.js"></script>
 </body>
 </html>
