@@ -141,7 +141,7 @@
   <section id="results" hidden>
     <h2>Вакансии, которые совмещаются с учёбой</h2>
     <div id="list"></div>
-    <p class="small">В базе 68 вакансий без опыта с rabota.by (собраны 14.11.2026: гибкий график, после 16:00, выходные, 4–6 ч, подработка, удалённо). Перед откликом проверь, что вакансия ещё открыта.</p>
+    <p class="small">В базе <span id="vacTotal">—</span> вакансий без опыта с rabota.by (собраны 14–15.11.2026: гибкий график, после 16:00, выходные, 4–6 ч, подработка, удалённо). Перед откликом проверь, что вакансия ещё открыта.</p>
   </section>
 
   <section>
@@ -280,6 +280,7 @@ const VACANCIES = [
 
 // + 50 вакансий, собранных автоматически (файл vacancies-extra.js)
 VACANCIES.push(...(window.EXTRA_VACANCIES || []));
+document.getElementById('vacTotal').textContent = VACANCIES.length;
 
 // ---- Чипы ----
 function renderChips(containerId, items) {
