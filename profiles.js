@@ -118,6 +118,58 @@ delBtn.onclick = () => {
   say(`Анкета «${p.name}» удалена. Форма осталась заполненной — можно сохранить её заново.`);
 };
 
+// ---- Перенос между устройствами: файл анкеты ----
+const FILE_TYPE = 'rabota-pod-uchebu/anketa';
+document.getElementById('profExport').onclick = () => {
+  const name = nameIn.value.trim() || 'Моя анкета';
+  const file = { type: FILE_TYPE, version: 1, name, exported: new Date().toISOString(), data: captureForm() };
+  const safe = name.replace(/[\\/:*?"<>|]+/g, '').slice(0, 40) || 'anketa';
+  downloadFile(`Анкета — ${safe}.json`, 'application/json', JSON.stringify(file, null, 1));
+  say(`Файл «Анкета — ${safe}.json» скачан. Перешли его себе и загрузи на другом устройстве.`);
+};
+
+// Берём из файла только известные поля, остальное игнорируем
+function cleanData(d) {
+  const str = (v, max) => (typeof v === 'string' ? v.slice(0, max) : '');
+  const arr = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string').map(x => x.slice(0, 80)).slice(0, 60) : []);
+  const out = { fields: {}, picks: {}, custom: {} };
+  FIELD_IDS.forEach(id => { out.fields[id] = str((d.fields || {})[id], id === 'exp' ? 3000 : 200); });
+  CHIP_GROUPS.forEach(g => { out.picks[g] = arr((d.picks || {})[g]); });
+  Object.keys(CUSTOM_LISTS).forEach(g => { out.custom[g] = arr((d.custom || {})[g]); });
+  return out;
+}
+
+document.getElementById('profImport').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';                       // чтобы тот же файл можно было выбрать ещё раз
+  if (!f) return;
+  if (f.size > 200000) { say('Файл слишком большой — это не файл анкеты.'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    let j;
+    try { j = JSON.parse(reader.result); } catch (err) { say('Не получилось прочитать файл: это не файл анкеты (.json).'); return; }
+    if (!j || j.type !== FILE_TYPE || !j.data) { say('Этот файл не похож на анкету с этого сайта.'); return; }
+    const list = getProfiles();
+    let name = (typeof j.name === 'string' && j.name.trim().slice(0, 60)) || 'Загруженная анкета';
+    if (list.some(p => p.name === name)) {   // такое название уже есть — добавим номер
+      let n = 2; while (list.some(p => p.name === `${name} (${n})`)) n++;
+      name = `${name} (${n})`;
+    }
+    const data = cleanData(j.data);
+    const p = { id: 'p' + Date.now(), name, data, saved: Date.now() };
+    list.push(p);
+    setProfiles(list);
+    currentId = p.id;
+    applyForm(data);
+    nameIn.value = name;
+    renderProfileList();
+    store.set('draft', captureForm());
+    say(`Загружена и сохранена анкета «${name}».`);
+  };
+  reader.onerror = () => say('Не получилось прочитать файл. Попробуй ещё раз.');
+  reader.readAsText(f);
+});
+
 // ---- Черновик: форма не теряется при перезагрузке страницы ----
 let draftTimer = null;
 function saveDraft() {

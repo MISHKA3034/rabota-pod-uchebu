@@ -114,8 +114,14 @@
       <button type="button" class="chip" id="profSave">💾 Сохранить</button>
       <button type="button" class="chip" id="profNew">➕ Новая анкета</button>
       <button type="button" class="chip" id="profDel" hidden>🗑 Удалить</button>
-      <span class="small" id="profMsg" role="status"></span>
     </div>
+    <div class="acts">
+      <button type="button" class="chip" id="profExport">⬇ Скачать анкету в файл</button>
+      <label class="chip" for="profImport" style="cursor:pointer">⬆ Загрузить из файла</label>
+      <input type="file" id="profImport" accept=".json,application/json" hidden>
+    </div>
+    <p class="small" id="profMsg" role="status" style="margin-bottom:0"></p>
+    <p class="small" style="margin-bottom:0">Анкеты хранятся в этом браузере. Чтобы перенести на другое устройство — скачай файл, перешли себе (например, в Telegram) и загрузи там.</p>
   </section>
 
   <section id="step1">
