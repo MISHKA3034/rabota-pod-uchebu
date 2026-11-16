@@ -101,6 +101,23 @@
   <h1>🎓 Работа под учёбу</h1>
   <p class="sub">Отметь, когда ты свободен от пар и что умеешь. Покажем подработки с rabota.by, praca.by и gsz.gov.by, которые можно совмещать с учёбой, и соберём резюме.</p>
 
+  <section id="profiles">
+    <h2>📁 Мои анкеты</h2>
+    <p class="small" style="margin-top:0">Сохрани заполненную анкету, чтобы потом выбрать её и не вводить всё заново. Можно держать несколько: например, «Подработка вечером» и «Летняя работа».</p>
+    <div class="row">
+      <div><label class="f" for="profSelect">Анкета</label>
+        <select id="profSelect"><option value="">➕ Новая анкета</option></select></div>
+      <div><label class="f" for="profName">Название</label>
+        <input type="text" id="profName" placeholder="например: Подработка вечером" autocomplete="off"></div>
+    </div>
+    <div class="acts">
+      <button type="button" class="chip" id="profSave">💾 Сохранить</button>
+      <button type="button" class="chip" id="profNew">➕ Новая анкета</button>
+      <button type="button" class="chip" id="profDel" hidden>🗑 Удалить</button>
+      <span class="small" id="profMsg" role="status"></span>
+    </div>
+  </section>
+
   <section id="step1">
     <h2>1. Где и когда ты можешь работать</h2>
     <label class="f" for="city">Город</label>
@@ -381,16 +398,35 @@ renderChips('cats', CATS.concat({ id: 'other', label: 'Другое' }));
 
 // ---- Свои умения / что есть / опыт ----
 let customN = 0;
+// Добавить своё умение / «что есть» / опыт как кнопку (используется и при загрузке анкеты)
+function addCustom(group, list, label, pressed = true) {
+  const same = list.find(x => x.label.toLowerCase() === label.toLowerCase());
+  if (same) {
+    const b = document.querySelector(`#${group} .chip[data-id="${same.id}"]`);
+    if (b && pressed) b.setAttribute('aria-pressed', 'true');
+    return same;
+  }
+  const item = { id: 'c' + (++customN), label, custom: true };
+  list.push(item);
+  renderChips(group, [item]);
+  document.querySelector(`#${group} .chip[data-id="${item.id}"]`).setAttribute('aria-pressed', String(pressed));
+  return item;
+}
+// Убрать все свои кнопки из группы (при переключении анкеты)
+function removeCustom(group, list) {
+  for (let i = list.length - 1; i >= 0; i--) {
+    if (!list[i].custom) continue;
+    const b = document.querySelector(`#${group} .chip[data-id="${list[i].id}"]`);
+    if (b) b.remove();
+    list.splice(i, 1);
+  }
+}
 function setupCustom(group, list) {
   const input = document.getElementById(group + 'In');
   const add = () => {
     const label = input.value.trim();
     if (!label) return;
-    if (list.some(x => x.label.toLowerCase() === label.toLowerCase())) { input.value = ''; return; }
-    const item = { id: 'c' + (++customN), label, custom: true };
-    list.push(item);
-    renderChips(group, [item]);
-    document.querySelector(`#${group} .chip[data-id="${item.id}"]`).setAttribute('aria-pressed', 'true');
+    addCustom(group, list, label, true);
     input.value = ''; input.focus();
   };
   document.getElementById(group + 'Add').onclick = add;
@@ -813,5 +849,6 @@ PROFILE_IDS.forEach(id => document.getElementById(id).addEventListener('input', 
 }));
 </script>
 <script src="internships.js"></script>
+<script src="profiles.js"></script>
 </body>
 </html>
