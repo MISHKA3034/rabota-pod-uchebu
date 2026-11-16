@@ -99,7 +99,7 @@
 <body>
 <main>
   <h1>🎓 Работа под учёбу</h1>
-  <p class="sub">Отметь, когда ты свободен от пар и что умеешь. Покажем только вакансии, которые можно совмещать с учёбой, и соберём резюме.</p>
+  <p class="sub">Отметь, когда ты свободен от пар и что умеешь. Покажем подработки с rabota.by, praca.by и gsz.gov.by, которые можно совмещать с учёбой, и соберём резюме.</p>
 
   <section id="step1">
     <h2>1. Где и когда ты можешь работать</h2>
@@ -107,7 +107,15 @@
     <input type="text" id="city" list="cityList" placeholder="Начни вводить, например: Минск (пусто — любой город)" autocomplete="off">
     <datalist id="cityList"></datalist>
     <div class="small" id="cityHint"></div>
-    <label class="check"><input type="checkbox" id="remoteOnly"> Только удалённо</label>
+    <label class="f" for="workFormat">Формат работы</label>
+    <select id="workFormat">
+      <option value="any">Любой</option>
+      <option value="onsite">Только на месте (ходить на работу)</option>
+      <option value="remote">Только удалённо</option>
+    </select>
+
+    <label class="f">Какая работа интересует? <span class="hint">(ничего не выбрано — любая)</span></label>
+    <div class="chips" id="cats"></div>
 
     <label class="f">Когда ты свободен от учёбы? <span class="hint">(можно несколько)</span></label>
     <div class="chips" id="slots"></div>
@@ -168,7 +176,7 @@
     </div>
     <div id="savedBox"></div>
     <div id="list"></div>
-    <p class="small">В базе <span id="vacTotal">—</span> вакансий без опыта с rabota.by (собраны 14–15.11.2026: гибкий график, после 16:00, выходные, 4–6 ч, подработка, удалённо). Перед откликом проверь, что вакансия ещё открыта.</p>
+    <p class="small">В базе <span id="vacTotal">—</span> вакансий без опыта: rabota.by, praca.by и gsz.gov.by (временная работа для студентов), собраны 14–16.11.2026. Перед откликом проверь, что вакансия ещё открыта.</p>
   </section>
 
   <section>
@@ -357,6 +365,20 @@ const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map((d, i) => ({
 const JOBS = [];
 renderChips('slots', SLOTS); renderChips('skills', SKILLS); renderChips('has', HAS); renderChips('days', DAYS);
 
+// ---- Сферы работы: определяются по названию вакансии ----
+const CATS = [
+  { id: 'courier', label: 'Курьер, доставка', rx: /(курьер|доставк|развоз|водител|такси)/i },
+  { id: 'clean', label: 'Уборка, дворник, благоустройство', rx: /(уборщ|уборк|дворник|клинер|клининг|мойщ|горничн|санитар|благоустр|озелен|садов|территор)/i },
+  { id: 'warehouse', label: 'Склад, грузчик, разнорабочий', rx: /(грузчик|склад|комплектовщ|упаковщ|сборщик|фасовщ|разнорабоч|подсобн|рабоч|кладовщ)/i },
+  { id: 'sales', label: 'Продажи, касса, промоутер', rx: /(продав|кассир|консультант|мерч[ае]ндайз|промоутер|торгов|выдачи заказов|пвз)/i },
+  { id: 'food', label: 'Кафе, кухня', rx: /(повар|бариста|официант|пекар|кондитер|ресторан|кафе|kfc|burger|бармен|посудомо|шаурм|суши|кухн)/i },
+  { id: 'home', label: 'Помощь по дому, дети, животные', rx: /(по дому|няня|сиделк|домработ|хозяйств|прогулк|выгул|животн|ветерин|вожат|воспитат|детск|дет[еи]й|аниматор)/i },
+  { id: 'office', label: 'Офис, администратор, оператор', rx: /(администратор|оператор|ассистент|секретар|офис|делопроизвод|архив)/i },
+  { id: 'it', label: 'IT, дизайн, соцсети', rx: /(smm|дизайн|программ|разработ|аналитик|контент|тестиров|\bit\b|developer)/i },
+];
+const catOf = v => v._cat || (v._cat = (CATS.find(c => c.rx.test(v.title)) || { id: 'other' }).id);
+renderChips('cats', CATS.concat({ id: 'other', label: 'Другое' }));
+
 // ---- Свои умения / что есть / опыт ----
 let customN = 0;
 function setupCustom(group, list) {
@@ -455,12 +477,30 @@ function rabotaLinks(s) {
     if (s.slots.has('night')) L.push(['Сменный график', url({ schedule: 'shift' })]);
     L.push(['Гибкий график', url({ schedule: 'flexible' })]);
   }
-  L.push(['Удалённо', url({ schedule: 'remote' })]);
+  if (!s.onsiteOnly) L.push(['Удалённо', url({ schedule: 'remote' })]);
   const words = [...s.skills, ...s.jobs]
     .map(id => SKILLS.concat(JOBS).find(x => x.id === id))
     .filter(x => x && x.custom).map(x => x.label.split(/[,(]/)[0].trim()).filter(w => w.length >= 3);
   [...new Set(words)].slice(0, 4).forEach(w => L.push([`По запросу «${w}»`, url({ text: w })]));
   return L;
+}
+
+// Другие сайты с работой (адреса страниц проверены 15.11.2026)
+function otherSites(s) {
+  const city = s.city !== 'any' ? s.city : '';
+  const praca = [['Работа для студентов', 'https://praca.by/rabota-dlya-studentov/'],
+    ['Разовая работа, подработка', 'https://praca.by/razovaya-rabota/'],
+    ['Частичная занятость', 'https://praca.by/chastichnaya-zanyatost/'],
+    ['Работа без опыта', 'https://praca.by/rabota-bez-opyta/']];
+  if (!s.onsiteOnly) praca.push(['Работа на дому', 'https://praca.by/rabota-na-domu/']);
+  const belmeta = [[city ? `Подработка: ${city}` : 'Подработка по Беларуси',
+    'https://belmeta.com/' + encodeURI('вакансии/Подработка' + (city ? '/' + city : ''))]];
+  return [
+    ['praca.by', 'подборки для студентов и разовых подработок', praca],
+    ['belmeta.com', 'собирает вакансии с разных сайтов', belmeta],
+    ['gsz.gov.by', 'государственная служба занятости: работа в свободное от учёбы время', [
+      ['Работа для студентов и школьников', 'https://gsz.gov.by/registration/temporary-employment/young/']]],
+  ];
 }
 
 // ---- Подбор ----
@@ -478,7 +518,9 @@ function readStudent() {
   if (ct) ct.slots.forEach(x => slots.add(x));
   return {
     city: resolveCity(),
-    remoteOnly: document.getElementById('remoteOnly').checked,
+    remoteOnly: document.getElementById('workFormat').value === 'remote',
+    onsiteOnly: document.getElementById('workFormat').value === 'onsite',
+    cats: picked('cats'),
     slots, skills: picked('skills'), has: picked('has'), jobs: picked('jobs'),
     maxShift: ct && ct.hours ? ct.hours : Number(document.getElementById('maxShift').value),
     timeText: ct ? ct.text : '',
@@ -487,6 +529,8 @@ function readStudent() {
 
 function matchVacancy(v, s) {
   if (s.remoteOnly && !v.remote) return null;
+  if (s.onsiteOnly && v.remote) return null;
+  if (s.cats.size && !s.cats.has(catOf(v))) return null;
   if (!v.remote && s.city !== 'any' && v.city !== s.city) return null;
   const slotHits = v.slots.filter(x => s.slots.has(x));
   if (!slotHits.length) return null;            // не совпадает время
@@ -545,13 +589,14 @@ function card(m) {
   lines.push(`<li class="ok">время: ${m.slotHits.map(id => labelOf(SLOTS, id).toLowerCase()).join(', ')}${v.remote ? ' (удалённо)' : ''}</li>`);
   lines.push(`<li class="ok">график: ${esc(v.schedule)}</li>`);
   if (v.studentNote) lines.push(`<li class="ok">в вакансии: «${esc(v.studentNote)}»</li>`);
+  if (v.phone) lines.push(`<li class="ok">телефон службы занятости: <span style="user-select:all">${esc(v.phone)}</span></li>`);
   if (m.skillHits.length) lines.push(`<li class="ok">твои навыки: ${m.skillHits.map(id => labelOf(SKILLS, id).toLowerCase()).join(', ')}</li>`);
   if (m.customHits.length) lines.push(`<li class="ok">твой опыт/умения: ${m.customHits.map(esc).join(', ')}</li>`);
   m.missingHard.forEach(n => lines.push(`<li class="bad">нужно: ${esc(n.label)}</li>`));
   m.softNotes.forEach(n => lines.push(`<li class="warn">${esc(n.label)}</li>`));
   return `<div class="vac${m.missingHard.length ? ' dim' : ''}">
     <h3>${esc(v.title)}</h3>
-    <div class="meta">${esc(v.company)} · ${esc(v.city)}${v.remote ? ' · удалённо' : ''} · <b>${esc(v.salary)}</b></div>
+    <div class="meta">${esc(v.company)} · ${esc(v.city)}${v.remote ? ' · удалённо' : ' · на месте'} · <b>${esc(v.salary)}</b> · источник: ${esc(v.source || 'rabota.by')}</div>
     <ul>${lines.join('')}</ul>
     <a href="${v.url}" target="_blank" rel="noopener">Открыть вакансию на сайте →</a>
     ${vacActions(v)}
@@ -655,9 +700,10 @@ function showVacancies(scroll) {
     html += `<details><summary>Ещё ${almost.length} подходят по времени, но нужно то, чего ты не отметил</summary>${almost.map(card).join('')}</details>`;
   }
   const where = s.city === 'any' || !AREA[s.city] ? 'по всей Беларуси' : esc(s.city);
-  html += `<div class="more"><h3>🔎 Искать по всему rabota.by</h3>
-    <p class="small">Откроется сайт с уже включёнными фильтрами: без опыта, ${where}, твоё время.</p>
-    <div class="chips">${rabotaLinks(s).map(([t, u]) => `<a class="chip" href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} →</a>`).join('')}</div></div>`;
+  const chipsOf = L => `<div class="chips">${L.map(([t, u]) => `<a class="chip" href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} →</a>`).join('')}</div>`;
+  html += `<div class="more"><h3>🔎 Искать ещё на сайтах с работой</h3>
+    <p class="small"><b>rabota.by</b> — откроется с фильтрами: без опыта, ${where}, твоё время.</p>${chipsOf(rabotaLinks(s))}
+    ${otherSites(s).map(([name, note, L]) => `<p class="small" style="margin-top:12px"><b>${name}</b> — ${note}</p>${chipsOf(L)}`).join('')}</div>`;
   document.getElementById('list').innerHTML = html;
   const res = document.getElementById('results');
   res.hidden = false;
@@ -678,9 +724,6 @@ document.getElementById('makeResume').onclick = () => {
     (val('name') || 'Имя Фамилия').toUpperCase(),
     [s.city !== 'any' ? s.city : '', val('contact')].filter(Boolean).join(' · '),
     '',
-    'ЦЕЛЬ',
-    'Подработка или стажировка с графиком, который совмещается с учёбой.',
-    '',
     'ОБРАЗОВАНИЕ',
     [val('uni') || 'Университет', val('spec')].filter(Boolean).join(', '),
     '',
@@ -690,11 +733,8 @@ document.getElementById('makeResume').onclick = () => {
     '',
     'ОПЫТ И ПРОЕКТЫ',
     exp.length ? exp.map(x => '• ' + x).join('\n') : '• Учебные проекты (добавь пару строк выше)',
-    '',
-    'ГОТОВНОСТЬ К РАБОТЕ',
-    (s.timeText ? 'Свободен(на): ' + s.timeText + '. '
-      : times.length ? 'Свободное время: ' + times.join(', ') + '. ' : '') + 'Смена до ' + s.maxShift + ' ч.',
   ].join('\n').replace(/\n{3,}/g, '\n\n');
+  // «Цель» и «Готовность к работе» убраны после теста: это обсуждают напрямую с работодателем
   // Заголовки разделов жирным (просьба Марго: «больше форматирования»)
   document.getElementById('resume').innerHTML = out.split('\n')
     .map((l, i) => (i === 0 || isHeading(l)) && l.trim() ? `<b>${esc(l)}</b>` : esc(l)).join('\n');
