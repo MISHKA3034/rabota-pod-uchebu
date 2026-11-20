@@ -1207,21 +1207,43 @@ document.getElementById('findSticky').onclick = () => showVacancies(true);
 })();
 // ---- Вкладки: #home, #podbor, #vakansii, #rezume, #stazhirovki ----
 const TABS = ['home', 'podbor', 'vakansii', 'rezume', 'stazhirovki'];
-function go(tab) {
-  if (!TABS.includes(tab)) tab = 'home';
+// Каждый переход — новая запись в истории, чтобы «Назад» возвращал на прошлую вкладку, а не уводил с сайта
+// (замечание из теста). Позиция прокрутки каждой вкладки запоминается и восстанавливается при «Назад».
+const tabScroll = {};
+let curTab = null;
+function showTab(tab, scrollTo) {
+  if (curTab) tabScroll[curTab] = document.documentElement.scrollTop;
+  curTab = tab;
   document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== tab; });
   document.querySelectorAll('.tabs a').forEach(a => { if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-  if (location.hash !== '#' + tab) { try { history.replaceState(null, '', '#' + tab); } catch (e) {} }
-  document.documentElement.scrollTop = 0;
+  document.documentElement.scrollTop = scrollTo || 0;
 }
-window.addEventListener('hashchange', () => go(location.hash.slice(1)));
+function go(tab) {
+  if (!TABS.includes(tab)) tab = 'home';
+  if (tab === curTab) { document.documentElement.scrollTop = 0; return; }
+  if (location.hash !== '#' + tab) { try { history.pushState({ tab }, '', '#' + tab); } catch (e) {} }
+  showTab(tab, 0);
+}
+// «Назад» / «Вперёд» в браузере и ручная правка адреса
+function fromAddress() {
+  let tab = location.hash.slice(1);
+  if (!TABS.includes(tab)) tab = 'home';
+  if (tab !== curTab) showTab(tab, tabScroll[tab]);
+}
+window.addEventListener('popstate', fromAddress);
+window.addEventListener('hashchange', fromAddress);
 document.addEventListener('click', e => {
   const a = e.target.closest('a[href^="#"]');
   if (!a) return;
   const t = a.getAttribute('href').slice(1);
   if (TABS.includes(t)) { e.preventDefault(); go(t); }
 });
-go(location.hash.slice(1));
+// первая загрузка: открываем вкладку из адреса, без лишней записи в истории
+(function () {
+  let tab = location.hash.slice(1);
+  if (!TABS.includes(tab)) { tab = 'home'; try { history.replaceState({ tab }, '', '#home'); } catch (e) {} }
+  showTab(tab, 0);
+})();
 
 // «Мои анкеты» открываются по кнопке в шапке
 function setProfilesOpen(open) {
