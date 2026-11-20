@@ -5,104 +5,309 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Работа под учёбу</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
-  :root {
-    --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5d6675;
-    --line: #dfe3e8; --accent: #2f6fde; --accent-text: #ffffff;
-    --ok: #1f8a4c; --warn: #b26a00; --bad: #c0392b; --chip: #eef2f7;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #14171c; --card: #1d2128; --text: #e7eaef; --muted: #9aa3b2;
-      --line: #313743; --accent: #5b8ff0; --accent-text: #0e1116;
-      --ok: #4cc386; --warn: #e0a440; --bad: #ef7b6e; --chip: #262b34;
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #14171c; --card: #1d2128; --text: #e7eaef; --muted: #9aa3b2;
-    --line: #313743; --accent: #5b8ff0; --accent-text: #0e1116;
-    --ok: #4cc386; --warn: #e0a440; --bad: #ef7b6e; --chip: #262b34;
+/* ===== Дизайн-система «Работа под учёбу» v3 (20.11.2026) =====
+   5 вкладок: шапка-градиент с вкладками (на телефоне — нижняя панель), у каждой вкладки фото-баннер.
+   Цвет: сине-фиолетовый градиент бренда, сиреневый фон, белые карточки, один акцент + смысловые ok/warn/bad.
+   Контраст текста ≥ 4.5:1 (WCAG 2.2 AA) в обеих темах — проверяется скриптом. */
+:root {
+  --bg: #F3F1FF; --surface: #FFFFFF; --surface-2: #F1EFFC; --text: #1D1A35; --muted: #565273;
+  --line: #E1DDF3; --line-strong: #C9C3E6;
+  --accent: #5B3FE0; --accent-hover: #4A2FCB; --accent-soft: #ECE8FF; --on-accent: #FFFFFF;
+  --grad: linear-gradient(120deg, #4F46E5 0%, #7C3AED 55%, #C026D3 100%);
+  --ok: #18794A; --ok-soft: #E3F5EA; --warn: #8A5700; --warn-soft: #FDF1DC; --bad: #B4322A; --bad-soft: #FDE7E5;
+  --shadow: 0 1px 2px rgba(40, 20, 120, .06), 0 8px 24px rgba(40, 20, 120, .07);
+  --focus: 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent);
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --fs-xs: .8125rem; --fs-sm: .875rem; --fs-md: 1rem; --fs-lg: 1.25rem; --fs-xl: 1.625rem; --fs-hero: clamp(1.75rem, 4.5vw, 2.75rem);
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
+  --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-pill: 999px;
+  --tap: 44px; --tabbar: 64px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15131F; --surface: #1F1C2E; --surface-2: #2A2640; --text: #ECEAF6; --muted: #ABA6C6;
+    --line: #353050; --line-strong: #4A4468;
+    --accent: #A99BFF; --accent-hover: #BDB2FF; --accent-soft: #2E2852; --on-accent: #17132B;
+    --grad: linear-gradient(120deg, #3730A3 0%, #6D28D9 55%, #A21CAF 100%);
+    --ok: #6BCB97; --ok-soft: #1D3328; --warn: #E3B160; --warn-soft: #3A2F1C; --bad: #F08D80; --bad-soft: #3D2421;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
     color-scheme: dark;
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text);
-         font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 760px; margin: 0 auto; padding-block: 16px;
-         padding-left: max(16px, env(safe-area-inset-left, 0px));
-         padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-  .vac, .vac * { overflow-wrap: anywhere; }
-  h1 { font-size: 1.5rem; margin: 8px 0 4px; }
-  h2 { font-size: 1.1rem; margin: 0 0 10px; }
-  .sub { color: var(--muted); margin: 0 0 16px; }
-  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-            padding: 16px; margin-bottom: 14px; }
-  label.f { display: block; font-weight: 600; margin: 10px 0 6px; }
-  .hint { color: var(--muted); font-size: .88rem; font-weight: 400; }
-  .add { display: flex; gap: 8px; margin-top: 10px; }
-  .add input { flex: 1; min-width: 0; }
-  .add .chip { white-space: nowrap; }
-  select, input[type=text], input[type=time], textarea {
-    width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px;
-    background: var(--card); color: var(--text); font: inherit; }
-  textarea { min-height: 90px; resize: vertical; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { border: 1px solid var(--line); background: var(--chip); color: var(--text);
-          border-radius: 999px; padding: 7px 12px; font: inherit; cursor: pointer; }
-  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
-  .check { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
-  button.main { width: 100%; margin-top: 16px; padding: 13px; border: 0; border-radius: 10px;
-                background: var(--accent); color: var(--accent-text); font: inherit; font-weight: 700; cursor: pointer; }
-  .err { color: var(--bad); margin-top: 8px; min-height: 1em; }
-  .vac { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-top: 10px; }
-  .vac h3 { margin: 0 0 2px; font-size: 1rem; }
-  .vac .meta { color: var(--muted); font-size: .9rem; }
-  .vac ul { margin: 8px 0 8px; padding-left: 0; list-style: none; font-size: .92rem; }
-  .vac li.ok::before { content: "✓ "; color: var(--ok); font-weight: 700; }
-  .vac li.warn::before { content: "⚠ "; color: var(--warn); }
-  .vac li.bad::before { content: "✗ "; color: var(--bad); font-weight: 700; }
-  .vac a { color: var(--accent); font-weight: 600; }
-  .vac.dim { opacity: .7; }
-  a.chip { text-decoration: none; display: inline-block; }
-  .more { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
-  .more h3 { margin: 0 0 4px; font-size: 1rem; }
-  .count { font-weight: 700; }
-  section.need { border-color: var(--bad); box-shadow: 0 0 0 2px var(--bad); }
-  .notice { margin: 0 0 10px; padding: 10px 12px; border-radius: 8px; background: var(--chip);
-            display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  pre#resume { white-space: pre-wrap; background: var(--chip); border-radius: 8px; padding: 12px;
-               font: 14px/1.5 ui-monospace, Consolas, monospace; }
-  .small { font-size: .85rem; color: var(--muted); }
-  details summary { cursor: pointer; color: var(--accent); margin-top: 10px; }
-  .tools { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 6px; }
-  .tools select { width: auto; max-width: 100%; }
-  .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-  .acts .chip { padding: 5px 10px; font-size: .9rem; }
-  .msg { width: 100%; min-height: 110px; margin-top: 8px; font-size: .92rem; }
-  .badge { display: inline-block; border-radius: 999px; padding: 2px 9px; font-size: .8rem; font-weight: 700;
-           border: 1px solid currentColor; margin-right: 6px; }
-  .b-ok { color: var(--ok); } .b-warn { color: var(--warn); } .b-bad { color: var(--bad); } .b-mute { color: var(--muted); }
-  .steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-  .steps .chip { font-size: .85rem; padding: 4px 10px; }
-  .vac dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 10px; margin: 8px 0; font-size: .9rem; }
-  .vac dt { color: var(--muted); } .vac dd { margin: 0; min-width: 0; }
-  @media (max-width: 520px) { .vac dl { grid-template-columns: 1fr; } .vac dd { margin-bottom: 4px; } }
-  @media print {
-    body * { visibility: hidden; }
-    #resume, #resume * { visibility: visible; }
-    #resume { position: absolute; left: 0; top: 0; background: none; font: 12pt/1.5 Georgia, serif; }
-  }
+}
+:root[data-theme="dark"] {
+  --bg: #15131F; --surface: #1F1C2E; --surface-2: #2A2640; --text: #ECEAF6; --muted: #ABA6C6;
+  --line: #353050; --line-strong: #4A4468;
+  --accent: #A99BFF; --accent-hover: #BDB2FF; --accent-soft: #2E2852; --on-accent: #17132B;
+  --grad: linear-gradient(120deg, #3730A3 0%, #6D28D9 55%, #A21CAF 100%);
+  --ok: #6BCB97; --ok-soft: #1D3328; --warn: #E3B160; --warn-soft: #3A2F1C; --bad: #F08D80; --bad-soft: #3D2421;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+  color-scheme: dark;
+}
+
+/* ---- база ---- */
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-padding-top: 16px; }
+body { margin: 0; color: var(--text); font: 400 var(--fs-md)/1.5 var(--font); -webkit-font-smoothing: antialiased;
+       background: var(--bg); background-image: radial-gradient(900px 420px at 100% 0, color-mix(in srgb, #C026D3 10%, transparent), transparent),
+                                                radial-gradient(700px 380px at 0 30%, color-mix(in srgb, #4F46E5 8%, transparent), transparent); background-attachment: fixed; }
+main { max-width: 800px; margin: 0 auto; padding-block: var(--s5) 120px;
+       padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main:has(.panel.wide:not([hidden])) { max-width: 1120px; }
+h1, h2, h3 { text-wrap: balance; letter-spacing: -.015em; }
+h2 { font-size: var(--fs-lg); font-weight: 700; margin: 0 0 var(--s3); line-height: 1.3; }
+h3 { font-size: var(--fs-md); font-weight: 650; margin: 0; line-height: 1.35; }
+p { margin: 0 0 var(--s2); }
+a { color: var(--accent); }
+:focus-visible { outline: none; box-shadow: var(--focus); }
+.vac, .vac * { overflow-wrap: anywhere; }
+.small { font-size: var(--fs-sm); color: var(--muted); }
+.hint { color: var(--muted); font-size: var(--fs-sm); font-weight: 400; }
+.err { color: var(--bad); font-size: var(--fs-sm); margin-top: var(--s2); }
+.err:empty { margin: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.eyebrow { font-size: var(--fs-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 var(--s2); opacity: .9; }
+
+/* ---- шапка с градиентом и вкладками ---- */
+.appbar { background: var(--grad); color: #fff; position: sticky; top: 0; z-index: 30; box-shadow: 0 4px 20px rgba(60, 30, 160, .25); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 31; background: #4F46E5; }
+.appbar { top: env(safe-area-inset-top, 0px); }
+.appbar-in { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
+             padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); }
+.brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 800; font-size: 1.0625rem; letter-spacing: -.01em; }
+.logo-mark { width: 32px; height: 32px; border-radius: 10px; background: #fff; color: #5B3FE0; display: grid; place-items: center;
+             font-size: 13px; font-weight: 800; flex-shrink: 0; }
+.tabs { max-width: 1120px; margin: 0 auto; display: flex; gap: 6px;
+        padding: 0 max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); }
+.tabs a { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 16px; border-radius: var(--r-pill);
+          color: #fff; text-decoration: none; font-weight: 600; font-size: var(--fs-sm); position: relative;
+          background: rgba(255, 255, 255, .12); transition: background .15s; }
+.tabs a:hover { background: rgba(255, 255, 255, .22); }
+.tabs a[aria-current="page"] { background: #fff; color: #4A2FCB; }
+.tabs svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.tab-count { background: #fff; color: #4A2FCB; border-radius: var(--r-pill); font-size: 11px; padding: 1px 7px; font-weight: 800; }
+.tabs a[aria-current="page"] .tab-count { background: #5B3FE0; color: #fff; }
+/* телефон: вкладки — нижняя панель, как в приложении */
+@media (max-width: 720px) {
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; gap: 0; justify-content: space-around;
+          background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -4px 20px rgba(40, 20, 120, .08);
+          padding: 4px max(4px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px)); }
+  .tabs a { flex: 1; flex-direction: column; gap: 2px; min-height: 54px; padding: 6px 2px; border-radius: 12px;
+            background: transparent; color: var(--muted); font-size: 11px; font-weight: 600; }
+  .tabs a:hover { background: transparent; }
+  .tabs a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+  .tabs svg { width: 22px; height: 22px; }
+  .tab-count { position: absolute; top: 2px; left: 55%; background: var(--accent); color: var(--on-accent); }
+  .tabs a[aria-current="page"] .tab-count { background: var(--accent); color: var(--on-accent); }
+  main { padding-bottom: calc(var(--tabbar) + 110px); }
+}
+
+/* ---- кнопки ---- */
+button.main, .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+  min-height: var(--tap); padding: 10px 18px; border-radius: var(--r-md); border: 1px solid transparent;
+  font: inherit; font-weight: 650; cursor: pointer; text-decoration: none; transition: background .15s, border-color .15s, transform .1s; }
+button.main:active, .btn:active { transform: translateY(1px); }
+button.main { width: 100%; margin-top: var(--s5); padding: 14px 18px; background: var(--grad); color: #fff; box-shadow: 0 6px 18px rgba(91, 63, 224, .3); }
+button.main:hover { filter: brightness(1.06); }
+button.main.alt, .btn-secondary { background: var(--surface); color: var(--accent); border-color: var(--accent); box-shadow: none; }
+button.main.alt:hover, .btn-secondary:hover { background: var(--accent-soft); filter: none; }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--line-strong); min-height: 40px; padding: 8px 14px; font-size: var(--fs-sm); font-weight: 550; }
+.btn-ghost:hover { background: var(--surface-2); }
+.btn-ghost[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.btn-light { background: #fff; color: #4A2FCB; }
+.btn-light:hover { background: #F1EEFF; }
+.btn-onbrand { background: rgba(255, 255, 255, .14); color: #fff; border-color: rgba(255, 255, 255, .45); min-height: 40px; padding: 8px 14px; font-size: var(--fs-sm); }
+.btn-onbrand:hover { background: rgba(255, 255, 255, .24); }
+.acts { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s3); align-items: center; }
+.acts .chip { min-height: 36px; padding: 6px 12px; }
+
+/* ---- вкладки-панели ---- */
+.panel { display: grid; gap: var(--s4); }
+.panel > section { margin: 0; }
+
+/* главная */
+.hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: var(--s5); align-items: center; background: var(--grad); color: #fff;
+        border-radius: 28px; padding: var(--s6); box-shadow: 0 20px 50px rgba(91, 63, 224, .28); overflow: hidden; }
+.hero-title { font-size: var(--fs-hero); line-height: 1.1; font-weight: 800; margin: 0 0 var(--s3); letter-spacing: -.025em; }
+.hero-sub { font-size: 1.0625rem; line-height: 1.55; margin: 0 0 var(--s5); color: rgba(255, 255, 255, .92); max-width: 52ch; }
+.hero-acts { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.hero-acts .btn { min-height: 48px; padding: 12px 22px; font-size: 1rem; }
+.hero-photo { width: 100%; height: 100%; max-height: 380px; object-fit: cover; border-radius: 20px; box-shadow: 0 12px 30px rgba(0, 0, 0, .25); }
+.stats { display: flex; flex-wrap: wrap; gap: var(--s5); margin-top: var(--s5); }
+.stats div { display: grid; }
+.stats b { font-size: 1.75rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stats span { font-size: var(--fs-sm); color: rgba(255, 255, 255, .88); }
+@media (max-width: 820px) {
+  .hero { grid-template-columns: 1fr; padding: var(--s5); border-radius: 22px; }
+  .hero-photo { order: -1; max-height: 220px; }
+}
+.block-title { font-size: var(--fs-xl); font-weight: 800; margin: var(--s5) 0 0; }
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); }
+@media (max-width: 820px) { .features { grid-template-columns: minmax(0, 1fr); } }
+.feature { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+           overflow: hidden; text-decoration: none; color: var(--text); box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s; }
+.feature:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(40, 20, 120, .14); }
+.feature img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; display: block; }
+.feature > div { padding: var(--s4) var(--s5) var(--s5); display: grid; gap: 6px; }
+.feature p { color: var(--muted); font-size: var(--fs-sm); margin: 0; }
+.more-link { color: var(--accent); font-weight: 650; font-size: var(--fs-sm); margin-top: 4px; }
+.how { list-style: none; counter-reset: how; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); }
+@media (max-width: 820px) { .how { grid-template-columns: minmax(0, 1fr); } }
+.how li { counter-increment: how; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s5); display: grid; gap: 4px; box-shadow: var(--shadow); }
+.how li::before { content: counter(how); width: 36px; height: 36px; border-radius: 12px; background: var(--grad); color: #fff;
+                  display: grid; place-items: center; font-weight: 800; margin-bottom: var(--s2); }
+.how span { color: var(--muted); font-size: var(--fs-sm); }
+.credits { font-size: var(--fs-xs); color: var(--muted); margin: var(--s3) 0 0; }
+
+/* фото-баннер вкладки */
+.banner { position: relative; border-radius: 24px; overflow: hidden; color: #fff; padding: var(--s6) var(--s5); min-height: 190px;
+          display: flex; flex-direction: column; justify-content: flex-end; box-shadow: 0 14px 36px rgba(91, 63, 224, .22);
+          background: linear-gradient(100deg, rgba(49, 30, 160, .92) 0%, rgba(110, 40, 200, .78) 50%, rgba(160, 30, 180, .35) 100%), var(--img) center / cover no-repeat; }
+.banner h2 { font-size: var(--fs-xl); font-weight: 800; margin: 0 0 6px; max-width: 26ch; }
+.banner p:last-child { margin: 0; color: rgba(255, 255, 255, .92); max-width: 52ch; }
+@media (max-width: 520px) { .banner { padding: var(--s5) var(--s4); min-height: 160px; border-radius: 20px; } }
+
+/* ---- блоки-секции ---- */
+section { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+          padding: var(--s5); margin-bottom: var(--s4); box-shadow: var(--shadow); }
+@media (max-width: 520px) { section { padding: var(--s4); } }
+section.need { border-color: var(--bad); box-shadow: 0 0 0 3px var(--bad-soft); }
+.stepno { display: inline-block; color: var(--accent); background: var(--accent-soft); border-radius: var(--r-pill); padding: 3px 10px;
+          font-size: var(--fs-xs); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; margin: 0 0 var(--s2); }
+#profiles { margin-bottom: var(--s4); }
+#profiles .close { float: right; margin-left: var(--s2); }
+
+/* ---- поля ---- */
+label.f { display: block; font-weight: 650; font-size: var(--fs-sm); margin: var(--s4) 0 var(--s2); }
+select, input[type=text], input[type=time], textarea {
+  width: 100%; min-height: var(--tap); padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--text); font: inherit; transition: border-color .15s; }
+select:hover, input:hover, textarea:hover { border-color: var(--muted); }
+select:focus-visible, input:focus-visible, textarea:focus-visible { border-color: var(--accent); }
+::placeholder { color: var(--muted); opacity: .85; }
+textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--s3); }
+@media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+.add { display: flex; gap: var(--s2); margin-top: var(--s3); }
+.add input { flex: 1; min-width: 0; }
+.add .chip { white-space: nowrap; }
+.check { display: flex; gap: var(--s2); align-items: center; min-height: var(--tap); }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+details summary { cursor: pointer; color: var(--accent); font-weight: 650; min-height: var(--tap); display: flex; align-items: center; }
+details.exact { margin-top: var(--s4); border-top: 1px solid var(--line); padding-top: var(--s1); }
+
+/* ---- чипы ---- */
+.chips { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 14px;
+        border: 1px solid var(--line); background: var(--surface-2); color: var(--text);
+        border-radius: var(--r-pill); font: inherit; font-size: var(--fs-sm); font-weight: 550; line-height: 1.3;
+        cursor: pointer; text-decoration: none; transition: background .15s, border-color .15s; }
+.chip:hover { border-color: var(--line-strong); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.chip[aria-pressed="true"]::before { content: "✓"; font-weight: 800; }
+
+/* ---- результаты ---- */
+.res-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s3); margin-bottom: var(--s2); }
+.res-head h2 { margin: 0; }
+.count { font-weight: 600; margin: var(--s3) 0 var(--s2); }
+.bignum { font-size: var(--fs-xl); font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+.summary { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 var(--s3); }
+.tag { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 3px 10px; font-size: var(--fs-xs);
+       font-weight: 600; background: var(--accent-soft); color: var(--accent); }
+.tools { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); align-items: center; padding: var(--s3) 0; border-block: 1px solid var(--line); }
+.tools select { width: auto; max-width: 100%; }
+
+/* ---- карточки вакансий и стажировок ---- */
+.vac { border: 1px solid var(--line); border-radius: var(--r-md); padding: var(--s4); margin-top: var(--s3); background: var(--surface);
+       border-left: 4px solid var(--accent); transition: box-shadow .15s; }
+.vac:hover { box-shadow: var(--shadow); }
+.vac .top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s3); }
+.vac .top h3 { font-size: 1.0625rem; }
+.vac .price { font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--ok); }
+@media (max-width: 520px) { .vac .top { flex-direction: column; gap: 2px; } .vac .price { white-space: normal; } .vac .acts .btn-primary { flex-basis: 100%; } }
+.vac .meta { color: var(--muted); font-size: var(--fs-sm); margin-top: 2px; }
+.vac ul { margin: var(--s3) 0 0; padding: 0; list-style: none; font-size: var(--fs-sm); display: grid; gap: 4px; }
+.vac li { padding-left: 22px; position: relative; }
+.vac li::before { position: absolute; left: 0; top: 0; font-weight: 800; }
+.vac li.ok::before { content: "✓"; color: var(--ok); }
+.vac li.warn::before { content: "!"; color: var(--warn); left: 4px; }
+.vac li.bad::before { content: "✗"; color: var(--bad); }
+.vac.dim { background: var(--surface-2); border-left-color: var(--line-strong); }
+.vac dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px var(--s3); margin: var(--s2) 0 0; font-size: var(--fs-sm); }
+.vac dt { color: var(--muted); } .vac dd { margin: 0; min-width: 0; }
+@media (max-width: 520px) { .vac dl { grid-template-columns: 1fr; gap: 0; } .vac dd { margin-bottom: var(--s2); } }
+.vac details { margin-top: var(--s2); }
+.vac details summary { min-height: 36px; font-size: var(--fs-sm); }
+.msg { width: 100%; min-height: 120px; margin-top: var(--s3); font-size: var(--fs-sm); }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--s2); }
+.badge { display: inline-flex; align-items: center; border-radius: var(--r-pill); padding: 3px 10px; font-size: var(--fs-xs); font-weight: 700; }
+.b-ok { color: var(--ok); background: var(--ok-soft); } .b-warn { color: var(--warn); background: var(--warn-soft); }
+.b-bad { color: var(--bad); background: var(--bad-soft); } .b-mute { color: var(--muted); background: var(--surface-2); }
+.more { margin-top: var(--s5); padding-top: var(--s4); border-top: 1px solid var(--line); }
+.more h3 { margin-bottom: var(--s1); }
+.steps { display: flex; flex-wrap: wrap; gap: 6px; margin: var(--s2) 0; }
+.steps .chip { min-height: 36px; font-size: var(--fs-xs); padding: 6px 12px; }
+
+/* ---- пустые состояния и сообщения ---- */
+.empty { text-align: center; padding: var(--s5) var(--s4); border: 2px dashed var(--line-strong); border-radius: var(--r-lg); margin-top: var(--s3); background: var(--surface); }
+.empty.big { padding: var(--s6) var(--s5); margin: 0; }
+.empty h3 { margin-bottom: var(--s1); font-size: var(--fs-lg); }
+.empty .acts { justify-content: center; }
+.notice { margin: 0 0 var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--accent-soft);
+          display: flex; flex-wrap: wrap; gap: var(--s2) var(--s3); align-items: center; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 40;
+         display: flex; align-items: center; gap: var(--s3); width: max-content; max-width: min(92vw, 520px);
+         background: var(--text); color: var(--bg); border-radius: var(--r-md); padding: 8px 10px 8px 16px;
+         box-shadow: 0 6px 24px rgba(0, 0, 0, .2); font-size: var(--fs-sm); }
+@media (max-width: 720px) { .toast { bottom: calc(var(--tabbar) + 84px + env(safe-area-inset-bottom, 0px)); } }
+.toast button { background: transparent; border: 0; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; min-height: 36px; padding: 0 6px; }
+
+/* ---- резюме как документ ---- */
+pre#resume { white-space: pre-wrap; background: var(--surface); color: var(--text); border: 1px solid var(--line);
+             border-radius: var(--r-md); padding: var(--s5); margin: 0; font: var(--fs-sm)/1.6 var(--font); box-shadow: var(--shadow); }
+pre#resume b { font-weight: 800; letter-spacing: .04em; }
+
+/* ---- нижняя кнопка «Подобрать» (только во вкладке «Подбор») ---- */
+.stickycta { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: color-mix(in srgb, var(--bg) 92%, transparent);
+             backdrop-filter: blur(8px); border-top: 1px solid var(--line);
+             padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+@media (max-width: 720px) { .stickycta { bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px)); padding-bottom: 10px; } }
+.stickycta .in { max-width: 768px; margin: 0 auto; }
+.stickycta button.main { margin-top: 0; font-size: 1.0625rem; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+@media print {
+  body * { visibility: hidden; }
+  #resume, #resume * { visibility: visible; }
+  #resume { position: absolute; left: 0; top: 0; border: 0; box-shadow: none; background: none; font: 12pt/1.5 Georgia, serif; }
+}
 </style>
 </head>
 <body>
-<main>
-  <h1>🎓 Работа под учёбу</h1>
-  <p class="sub">Отметь, когда ты свободен от пар и что умеешь. Покажем подработки с rabota.by, praca.by и gsz.gov.by, которые можно совмещать с учёбой, и соберём резюме.</p>
+<header class="appbar">
+  <div class="appbar-in">
+    <a class="brand" href="#home"><span class="logo-mark" aria-hidden="true">РУ</span><span>Работа под учёбу</span></a>
+    <button type="button" class="btn btn-onbrand" id="profToggle" aria-expanded="false" aria-controls="profiles">Мои анкеты ▾</button>
+  </div>
+  <nav class="tabs" aria-label="Разделы">
+    <a href="#home" data-tab="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Главная</span></a>
+    <a href="#podbor" data-tab="podbor"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg><span>Подбор</span></a>
+    <a href="#vakansii" data-tab="vakansii"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg><span>Вакансии</span><b class="tab-count" id="tabCount" hidden></b></a>
+    <a href="#rezume" data-tab="rezume"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h4"/></svg><span>Резюме</span></a>
+    <a href="#stazhirovki" data-tab="stazhirovki"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg><span>Стажировки</span></a>
+  </nav>
+</header>
 
-  <section id="profiles">
-    <h2>📁 Мои анкеты</h2>
+<main>
+  <section id="profiles" hidden>
+    <button type="button" class="chip close" id="profClose">Свернуть</button>
+    <h2>Мои анкеты</h2>
     <p class="small" style="margin-top:0">Сохрани заполненную анкету, чтобы потом выбрать её и не вводить всё заново. Можно держать несколько: например, «Подработка вечером» и «Летняя работа».</p>
     <div class="row">
       <div><label class="f" for="profSelect">Анкета</label>
@@ -111,152 +316,242 @@
         <input type="text" id="profName" placeholder="например: Подработка вечером" autocomplete="off"></div>
     </div>
     <div class="acts">
-      <button type="button" class="chip" id="profSave">💾 Сохранить</button>
-      <button type="button" class="chip" id="profNew">➕ Новая анкета</button>
-      <button type="button" class="chip" id="profDel" hidden>🗑 Удалить</button>
+      <button type="button" class="chip" id="profSave">Сохранить</button>
+      <button type="button" class="chip" id="profNew">Новая анкета</button>
+      <button type="button" class="chip" id="profDel" hidden>Удалить</button>
     </div>
     <div class="acts">
-      <button type="button" class="chip" id="profExport">⬇ Скачать анкету в файл</button>
-      <label class="chip" for="profImport" style="cursor:pointer">⬆ Загрузить из файла</label>
+      <button type="button" class="chip" id="profExport">Скачать в файл</button>
+      <label class="chip" for="profImport" style="cursor:pointer">Загрузить из файла</label>
       <input type="file" id="profImport" accept=".json,application/json" hidden>
     </div>
     <p class="small" id="profMsg" role="status" style="margin-bottom:0"></p>
     <p class="small" style="margin-bottom:0">Анкеты хранятся в этом браузере. Чтобы перенести на другое устройство — скачай файл, перешли себе (например, в Telegram) и загрузи там.</p>
   </section>
 
-  <section id="step1">
-    <h2>1. Где и когда ты можешь работать</h2>
-    <label class="f" for="city">Город</label>
-    <input type="text" id="city" list="cityList" placeholder="Начни вводить, например: Минск (пусто — любой город)" autocomplete="off">
-    <datalist id="cityList"></datalist>
-    <div class="small" id="cityHint"></div>
-    <label class="f" for="workFormat">Формат работы</label>
-    <select id="workFormat">
-      <option value="any">Любой</option>
-      <option value="onsite">Только на месте (ходить на работу)</option>
-      <option value="remote">Только удалённо</option>
-    </select>
-
-    <label class="f">Какая работа интересует? <span class="hint">(ничего не выбрано — любая)</span></label>
-    <div class="chips" id="cats"></div>
-
-    <label class="f">Когда ты свободен от учёбы? <span class="hint">(можно несколько)</span></label>
-    <div class="chips" id="slots"></div>
-    <div class="err" id="err1"></div>
-
-    <label class="f">Или укажи своё время <span class="hint">(дни и часы, когда точно свободен)</span></label>
-    <div class="chips" id="days"></div>
-    <div class="row">
-      <div><label class="f" for="tFrom">с</label><input type="time" id="tFrom"></div>
-      <div><label class="f" for="tTo">до</label><input type="time" id="tTo"></div>
-    </div>
-    <div class="small" id="timeHint"></div>
-
-    <label class="f" for="maxShift">Сколько часов подряд можешь работать? <span class="hint">(если указал своё время — посчитаем сами)</span></label>
-    <select id="maxShift">
-      <option value="3">до 3 часов</option>
-      <option value="5" selected>до 5 часов</option>
-      <option value="8">до 8 часов</option>
-      <option value="12">полный день (до 12 часов)</option>
-    </select>
-  </section>
-
-  <section>
-    <h2>2. Что ты умеешь</h2>
-    <p class="small" style="margin-top:0">Не знаешь, что написать в навыках? Просто нажми то, что про тебя.</p>
-    <div class="chips" id="skills"></div>
-    <div class="add">
-      <input type="text" id="skillsIn" placeholder="Своё умение: Excel, фотошоп, готовка…">
-      <button type="button" class="chip" id="skillsAdd">+ Добавить</button>
+  <!-- ===== Главная ===== -->
+  <div class="panel wide" id="tab-home" data-panel="home">
+    <div class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Для студентов Беларуси</p>
+        <h2 class="hero-title">Подработка, которая не мешает парам</h2>
+        <p class="hero-sub">Отметь, когда ты свободен от учёбы, — покажем вакансии без опыта с rabota.by, praca.by и gsz.gov.by, которые подходят именно под твоё расписание.</p>
+        <div class="hero-acts">
+          <a class="btn btn-light" href="#podbor">Подобрать работу</a>
+          <a class="btn btn-onbrand" href="#stazhirovki">Стажировки</a>
+        </div>
+        <div class="stats">
+          <div><b id="statVac">764</b><span>вакансии в базе</span></div>
+          <div><b>3</b><span>сайта с работой</span></div>
+          <div><b>8</b><span>стажировок</span></div>
+        </div>
+      </div>
+      <img class="hero-photo" src="img/students.jpg" alt="Студенты вместе смотрят в ноутбук в аудитории" width="1400" height="933">
     </div>
 
-    <label class="f">Что у тебя есть</label>
-    <div class="chips" id="has"></div>
-    <div class="add">
-      <input type="text" id="hasIn" placeholder="Своё: велосипед, ноутбук, сертификат…">
-      <button type="button" class="chip" id="hasAdd">+ Добавить</button>
+    <h2 class="block-title">Что здесь можно сделать</h2>
+    <div class="features">
+      <a class="feature" href="#podbor">
+        <img src="img/barista.jpg" alt="Бариста за стойкой кафе принимает заказ" loading="lazy" width="1400" height="933">
+        <div><h3>Работа под расписание пар</h3><p>Вечером, по выходным или сменами по 3–5 часов. Видно, почему вакансия подходит.</p><span class="more-link">Подобрать →</span></div>
+      </a>
+      <a class="feature" href="#rezume">
+        <img src="img/resume.jpg" alt="Студентка пишет конспект рядом с ноутбуком" loading="lazy" width="1400" height="933">
+        <div><h3>Резюме за минуту</h3><p>Даже без опыта: навыки и учёба собираются в резюме, его можно скачать в Word.</p><span class="more-link">Сделать резюме →</span></div>
+      </a>
+      <a class="feature" href="#stazhirovki">
+        <img src="img/team.jpg" alt="Молодая команда обсуждает проект у компьютера" loading="lazy" width="1400" height="933">
+        <div><h3>Стажировки и практика</h3><p>8 программ компаний Беларуси: проверим, подходишь ли ты, и составим письмо.</p><span class="more-link">Проверить →</span></div>
+      </a>
     </div>
 
-    <label class="f">Где и кем ты работал(а) <span class="hint">(подработки, практика, волонтёрство)</span></label>
-    <div class="chips" id="jobs"></div>
-    <div class="add">
-      <input type="text" id="jobsIn" placeholder="Например: курьер Яндекс Еды, лето 2025">
-      <button type="button" class="chip" id="jobsAdd">+ Добавить</button>
-    </div>
-    <button class="main" id="find">Подобрать вакансии</button>
-    <div class="err" id="err"></div>
-  </section>
+    <h2 class="block-title">Как это работает</h2>
+    <ol class="how">
+      <li><b>Отметь свободное время</b><span>Будни вечером, выходные или точные часы.</span></li>
+      <li><b>Получи подборку</b><span>Только вакансии, которые совмещаются с учёбой.</span></li>
+      <li><b>Откликнись</b><span>Готовое сообщение работодателю и резюме в Word.</span></li>
+    </ol>
+    <p class="credits">Фото: Vitaly Gariev и Julio Lopez, Unsplash (бесплатная лицензия Unsplash).</p>
+  </div>
 
-  <section id="results" hidden>
-    <h2>Вакансии, которые совмещаются с учёбой</h2>
-    <div class="tools">
-      <select id="sortBy" aria-label="Сортировка">
-        <option value="match">Сначала самые подходящие</option>
-        <option value="short">Сначала короткие смены</option>
-        <option value="student">Сначала где пишут про студентов</option>
+  <!-- ===== Подбор ===== -->
+  <div class="panel" id="tab-podbor" data-panel="podbor" hidden>
+    <div class="banner" style="--img:url('img/study.jpg')">
+      <p class="eyebrow">Подбор работы</p>
+      <h2>Расскажи, когда ты свободен</h2>
+      <p>2 шага — и список вакансий под твоё расписание готов.</p>
+    </div>
+    <section id="step1">
+      <p class="stepno">Шаг 1 из 2</p>
+      <h2>Где и когда ты можешь работать</h2>
+      <label class="f" for="city">Город</label>
+      <input type="text" id="city" list="cityList" placeholder="Начни вводить, например: Минск (пусто — любой город)" autocomplete="off">
+      <datalist id="cityList"></datalist>
+      <div class="small" id="cityHint"></div>
+      <label class="f" for="workFormat">Формат работы</label>
+      <select id="workFormat">
+        <option value="any">Любой</option>
+        <option value="onsite">Только на месте (ходить на работу)</option>
+        <option value="remote">Только удалённо</option>
       </select>
-      <label class="check" style="margin:0"><input type="checkbox" id="onlyStudents"> Только где прямо пишут про студентов</label>
-    </div>
-    <div id="savedBox"></div>
-    <div id="list"></div>
-    <p class="small">В базе <span id="vacTotal">—</span> вакансий без опыта: rabota.by, praca.by и gsz.gov.by (временная работа для студентов), собраны 14–16.11.2026. Перед откликом проверь, что вакансия ещё открыта.</p>
-  </section>
 
-  <section>
-    <h2>3. Резюме за минуту</h2>
-    <p class="small" style="margin-top:0">Навыки и время берутся из пунктов 1 и 2 выше. Здесь добавь пару строк о себе — вакансии подберём заодно.</p>
-    <div class="row">
-      <div><label class="f" for="name">Имя и фамилия</label><input type="text" id="name"></div>
-      <div><label class="f" for="contact">Телефон или Telegram</label><input type="text" id="contact"></div>
+      <label class="f">Какая работа интересует? <span class="hint">(ничего не выбрано — любая)</span></label>
+      <div class="chips" id="cats"></div>
+
+      <label class="f">Когда ты свободен от учёбы? <span class="hint">(можно несколько)</span></label>
+      <div class="chips" id="slots"></div>
+      <div class="err" id="err1"></div>
+
+      <details class="exact" id="exactBox">
+        <summary>Указать точные дни и часы</summary>
+        <label class="f">Дни <span class="hint">(когда точно свободен)</span></label>
+        <div class="chips" id="days"></div>
+        <div class="row">
+          <div><label class="f" for="tFrom">с</label><input type="time" id="tFrom"></div>
+          <div><label class="f" for="tTo">до</label><input type="time" id="tTo"></div>
+        </div>
+        <div class="small" id="timeHint"></div>
+      </details>
+
+      <label class="f" for="maxShift">Сколько часов подряд можешь работать? <span class="hint">(если указал своё время — посчитаем сами)</span></label>
+      <select id="maxShift">
+        <option value="3">до 3 часов</option>
+        <option value="5" selected>до 5 часов</option>
+        <option value="8">до 8 часов</option>
+        <option value="12">полный день (до 12 часов)</option>
+      </select>
+    </section>
+
+    <section>
+      <p class="stepno">Шаг 2 из 2 · можно пропустить</p>
+      <h2>Что ты умеешь</h2>
+      <p class="small" style="margin-top:0">Не знаешь, что написать в навыках? Просто нажми то, что про тебя.</p>
+      <div class="chips" id="skills"></div>
+      <div class="add">
+        <input type="text" id="skillsIn" placeholder="Своё умение: Excel, фотошоп, готовка…">
+        <button type="button" class="chip" id="skillsAdd">+ Добавить</button>
+      </div>
+
+      <label class="f">Что у тебя есть</label>
+      <div class="chips" id="has"></div>
+      <div class="add">
+        <input type="text" id="hasIn" placeholder="Своё: велосипед, ноутбук, сертификат…">
+        <button type="button" class="chip" id="hasAdd">+ Добавить</button>
+      </div>
+
+      <label class="f">Где и кем ты работал(а) <span class="hint">(подработки, практика, волонтёрство)</span></label>
+      <div class="chips" id="jobs"></div>
+      <div class="add">
+        <input type="text" id="jobsIn" placeholder="Например: курьер Яндекс Еды, лето 2025">
+        <button type="button" class="chip" id="jobsAdd">+ Добавить</button>
+      </div>
+      <button class="main" id="find">Подобрать вакансии</button>
+      <div class="err" id="err"></div>
+    </section>
+  </div>
+
+  <!-- ===== Вакансии ===== -->
+  <div class="panel" id="tab-vakansii" data-panel="vakansii" hidden>
+    <div class="banner" style="--img:url('img/barista.jpg')">
+      <p class="eyebrow">Вакансии</p>
+      <h2>Работа под твоё расписание</h2>
+      <p>Вакансии без опыта с трёх сайтов. Сохраняй понравившиеся и пиши работодателю.</p>
     </div>
-    <div class="row">
-      <div><label class="f" for="uni">Университет</label><input type="text" id="uni" placeholder="например, БГУ"></div>
-      <div><label class="f" for="spec">Специальность, курс</label><input type="text" id="spec" placeholder="например, экономика, 2 курс"></div>
+    <div class="empty big" id="noSearch">
+      <h3>Сначала расскажи, когда ты свободен</h3>
+      <p class="small">Подберём только те вакансии, которые совмещаются с парами.</p>
+      <div class="acts"><a class="btn btn-primary" href="#podbor">Перейти к подбору</a></div>
     </div>
-    <label class="f" for="exp">Опыт и проекты <span class="hint">(нет работы? это тоже опыт)</span></label>
-    <textarea id="exp" placeholder="Каждый пункт с новой строки. Например:
+    <section id="results" hidden>
+      <div class="res-head"><h2>Подходят под твоё время</h2><button type="button" class="btn btn-ghost" id="editCond">Изменить условия</button></div>
+      <div class="summary" id="condSummary"></div>
+      <div class="tools">
+        <select id="sortBy" aria-label="Сортировка">
+          <option value="match">Сначала самые подходящие</option>
+          <option value="short">Сначала короткие смены</option>
+          <option value="student">Сначала где пишут про студентов</option>
+        </select>
+        <label class="check" style="margin:0"><input type="checkbox" id="onlyStudents"> Только где прямо пишут про студентов</label>
+      </div>
+      <div id="savedBox"></div>
+      <div id="list"></div>
+      <p class="small">В базе <span id="vacTotal">—</span> вакансий без опыта: rabota.by, praca.by и gsz.gov.by (временная работа для студентов), собраны 14–16.11.2026. Перед откликом проверь, что вакансия ещё открыта.</p>
+    </section>
+  </div>
+
+  <!-- ===== Резюме ===== -->
+  <div class="panel" id="tab-rezume" data-panel="rezume" hidden>
+    <div class="banner" style="--img:url('img/resume.jpg')">
+      <p class="eyebrow">Резюме</p>
+      <h2>Резюме за минуту</h2>
+      <p>Навыки и время возьмём из «Подбора». Добавь пару строк о себе.</p>
+    </div>
+    <section>
+      <div class="row">
+        <div><label class="f" for="name">Имя и фамилия</label><input type="text" id="name"></div>
+        <div><label class="f" for="contact">Телефон или Telegram</label><input type="text" id="contact"></div>
+      </div>
+      <div class="row">
+        <div><label class="f" for="uni">Университет</label><input type="text" id="uni" placeholder="например, БГУ"></div>
+        <div><label class="f" for="spec">Специальность, курс</label><input type="text" id="spec" placeholder="например, экономика, 2 курс"></div>
+      </div>
+      <label class="f" for="exp">Опыт и проекты <span class="hint">(нет работы? это тоже опыт)</span></label>
+      <textarea id="exp" placeholder="Каждый пункт с новой строки. Например:
 Курсовой проект: сайт для кофейни (Figma)
 Волонтёр на городском марафоне
 Летняя подработка промоутером"></textarea>
-    <button class="main" id="makeResume">Сделать резюме</button>
-    <div id="resumeBox" hidden>
-      <div class="notice" id="resumeVac"></div>
-      <pre id="resume"></pre>
-      <div class="acts">
-        <button type="button" class="chip" id="copy">📋 Скопировать</button>
-        <button type="button" class="chip" id="toWord">⬇ Скачать в Word</button>
-        <button type="button" class="chip" id="toPrint">🖨 Распечатать</button>
-        <span class="small" id="copied"></span>
+      <button class="main" id="makeResume">Сделать резюме</button>
+      <div id="resumeBox" hidden>
+        <div class="notice" id="resumeVac"></div>
+        <pre id="resume"></pre>
+        <div class="acts">
+          <button type="button" class="btn btn-primary" id="toWord">Скачать в Word</button>
+          <button type="button" class="btn btn-ghost" id="copy">Скопировать</button>
+          <button type="button" class="btn btn-ghost" id="toPrint">Распечатать</button>
+          <span class="small" id="copied"></span>
+        </div>
       </div>
-    </div>
-    <p class="small">Данные анкеты сохраняются только в этом браузере, чтобы не вводить их заново.</p>
-  </section>
+      <p class="small" style="margin-top:12px">Данные анкеты сохраняются только в этом браузере, чтобы не вводить их заново.</p>
+    </section>
+  </div>
 
-  <section id="interns">
-    <h2>4. Стажировки и практика</h2>
-    <p class="small" style="margin-top:0">Программы компаний Беларуси (проверены 15.11.2026). Проверим, подходишь ли ты по условиям, составим письмо и напомним о сроках.</p>
-    <div class="row">
-      <div><label class="f" for="course">Курс</label>
-        <select id="course">
-          <option value="">не указан</option>
-          <option value="1">1 курс</option><option value="2">2 курс</option><option value="3">3 курс</option>
-          <option value="4">4 курс</option><option value="5">5 курс</option><option value="6">6 курс</option>
-          <option value="grad">Выпускник</option>
-        </select></div>
-      <div><label class="f" for="eduForm">Форма обучения</label>
-        <select id="eduForm">
-          <option value="day">Дневная (очная)</option>
-          <option value="part">Заочная или вечерняя</option>
-        </select></div>
+  <!-- ===== Стажировки ===== -->
+  <div class="panel" id="tab-stazhirovki" data-panel="stazhirovki" hidden>
+    <div class="banner" style="--img:url('img/team.jpg')">
+      <p class="eyebrow">Стажировки и практика</p>
+      <h2>Куда тебя возьмут</h2>
+      <p>8 программ компаний Беларуси, проверены 15.11.2026. Проверим условия, составим письмо и напомним о сроках.</p>
     </div>
-    <label class="f">Направление учёбы <span class="hint">(можно несколько)</span></label>
-    <div class="chips" id="dirs"></div>
-    <p class="small">Вуз, специальность, навыки и время берутся из пунктов 1–3.</p>
-    <button class="main" id="checkInterns">Проверить, куда я подхожу</button>
-    <div id="internList"></div>
-    <div id="tracker"></div>
-  </section>
+    <section id="interns">
+      <div class="row">
+        <div><label class="f" for="course">Курс</label>
+          <select id="course">
+            <option value="">не указан</option>
+            <option value="1">1 курс</option><option value="2">2 курс</option><option value="3">3 курс</option>
+            <option value="4">4 курс</option><option value="5">5 курс</option><option value="6">6 курс</option>
+            <option value="grad">Выпускник</option>
+          </select></div>
+        <div><label class="f" for="eduForm">Форма обучения</label>
+          <select id="eduForm">
+            <option value="day">Дневная (очная)</option>
+            <option value="part">Заочная или вечерняя</option>
+          </select></div>
+      </div>
+      <label class="f">Направление учёбы <span class="hint">(можно несколько)</span></label>
+      <div class="chips" id="dirs"></div>
+      <p class="small">Вуз и специальность берутся из вкладки «Резюме», навыки и время — из «Подбора».</p>
+      <button class="main" id="checkInterns">Проверить, куда я подхожу</button>
+      <div id="internList"></div>
+      <div id="tracker"></div>
+    </section>
+  </div>
 </main>
+
+<div class="stickycta" id="stickyCta" hidden>
+  <div class="in">
+    <button type="button" class="main" id="findSticky">Подобрать вакансии</button>
+  </div>
+</div>
 
 <script src="vacancies-extra.js"></script>
 <script>
@@ -370,6 +665,7 @@ const VACANCIES = [
 // + 50 вакансий, собранных автоматически (файл vacancies-extra.js)
 VACANCIES.push(...(window.EXTRA_VACANCIES || []));
 document.getElementById('vacTotal').textContent = VACANCIES.length;
+document.getElementById('statVac').textContent = VACANCIES.length;
 
 // ---- Чипы ----
 function renderChips(containerId, items) {
@@ -495,7 +791,7 @@ const CITIES = [...new Set(VACANCIES.map(v => v.city))].sort();            // е
 const ALL_CITIES = [...new Set(CITIES.concat(Object.keys(AREA)))].sort();  // + можно искать на rabota.by
 document.getElementById('cityList').innerHTML = ALL_CITIES.map(c => `<option value="${c}">`).join('');
 function cityCount(c) { return VACANCIES.filter(v => v.city === c).length; }
-const DEFAULT_CITY_HINT = 'Подсказки: ' + ALL_CITIES.join(', ') + '. Можно ввести любой город.';
+const DEFAULT_CITY_HINT = ''; // список из 60 городов убран (дизайн v2): подсказки появляются при вводе
 document.getElementById('city').addEventListener('input', e => {
   const q = norm(e.target.value);
   const hint = document.getElementById('cityHint');
@@ -637,33 +933,50 @@ function card(m) {
   m.missingHard.forEach(n => lines.push(`<li class="bad">нужно: ${esc(n.label)}</li>`));
   m.softNotes.forEach(n => lines.push(`<li class="warn">${esc(n.label)}</li>`));
   return `<div class="vac${m.missingHard.length ? ' dim' : ''}">
-    <h3>${esc(v.title)}</h3>
-    <div class="meta">${esc(v.company)} · ${esc(v.city)}${v.remote ? ' · удалённо' : ' · на месте'} · <b>${esc(v.salary)}</b> · источник: ${esc(v.source || 'rabota.by')}</div>
+    ${vacTop(v)}
+    <div class="meta">${esc(v.company)} · ${esc(v.city)}${v.remote ? ' · удалённо' : ' · на месте'} · источник: ${esc(v.source || 'rabota.by')}</div>
     <ul>${lines.join('')}</ul>
-    <a href="${v.url}" target="_blank" rel="noopener">Открыть вакансию на сайте →</a>
     ${vacActions(v)}
   </div>`;
 }
+// Название и зарплата — первое, что сравнивают студенты, поэтому в одну строку сверху
+function vacTop(v) {
+  return `<div class="top"><h3>${esc(v.title)}</h3><span class="price">${esc(v.salary)}</span></div>`;
+}
+// Одно главное действие (открыть вакансию) + тихие второстепенные
 function vacActions(v) {
   const i = VACANCIES.indexOf(v);
   const saved = store.get('saved', []).includes(v.url);
   return `<div class="acts">
-    <button type="button" class="chip" data-act="save" data-i="${i}" aria-pressed="${saved}">${saved ? '⭐ Сохранено' : '☆ Сохранить'}</button>
-    <button type="button" class="chip" data-act="hide" data-i="${i}">Скрыть</button>
-    <button type="button" class="chip" data-act="msg" data-i="${i}">✉ Написать работодателю</button>
+    <a class="btn btn-primary" href="${v.url}" target="_blank" rel="noopener">Открыть вакансию<span class="sr"> на сайте</span> ↗</a>
+    <button type="button" class="btn btn-ghost" data-act="msg" data-i="${i}">Написать работодателю</button>
+    <button type="button" class="btn btn-ghost" data-act="save" data-i="${i}" aria-pressed="${saved}">${saved ? '★ Сохранено' : '☆ Сохранить'}</button>
+    <button type="button" class="btn btn-ghost" data-act="hide" data-i="${i}">Скрыть</button>
   </div><div class="msgBox" data-for="${i}"></div>`;
 }
 function savedCard(v) {
-  return `<div class="vac"><h3>${esc(v.title)}</h3>
-    <div class="meta">${esc(v.company)} · ${esc(v.city)}${v.remote ? ' · удалённо' : ''} · <b>${esc(v.salary)}</b></div>
-    <div class="small">график: ${esc(v.schedule)}</div>
-    <a href="${v.url}" target="_blank" rel="noopener">Открыть вакансию на сайте →</a>${vacActions(v)}</div>`;
+  return `<div class="vac">${vacTop(v)}
+    <div class="meta">${esc(v.company)} · ${esc(v.city)}${v.remote ? ' · удалённо' : ''}</div>
+    <div class="small" style="margin-top:6px">график: ${esc(v.schedule)}</div>
+    ${vacActions(v)}</div>`;
 }
 function renderSaved() {
   const saved = store.get('saved', []);
   const list = saved.map(u => VACANCIES.find(v => v.url === u)).filter(Boolean);
   document.getElementById('savedBox').innerHTML = list.length
-    ? `<details open><summary>⭐ Сохранённые (${list.length})</summary>${list.map(savedCard).join('')}</details>` : '';
+    ? `<details open><summary>Сохранённые (${list.length})</summary>${list.map(savedCard).join('')}</details>` : '';
+}
+
+// ---- Короткое сообщение после действия (с возможностью отменить) ----
+let toastTimer = null;
+function toast(text, undo) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.innerHTML = `<span>${esc(text)}</span>${undo ? '<button type="button">Отменить</button>' : ''}`;
+  t.hidden = false;
+  if (undo) t.querySelector('button').onclick = () => { undo(); t.hidden = true; };
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, undo ? 6000 : 2500);
 }
 // Кнопки на карточках: сохранить / скрыть / сообщение работодателю
 document.getElementById('results').addEventListener('click', e => {
@@ -675,17 +988,21 @@ document.getElementById('results').addEventListener('click', e => {
   if (!v) return;
   if (act === 'save') {
     const s = store.get('saved', []);
-    store.set('saved', s.includes(v.url) ? s.filter(u => u !== v.url) : s.concat(v.url));
+    const was = s.includes(v.url);
+    store.set('saved', was ? s.filter(u => u !== v.url) : s.concat(v.url));
     showVacancies(false);
+    toast(was ? 'Убрано из сохранённых' : 'Сохранено — список вверху результатов');
   } else if (act === 'hide') {
-    store.set('hidden', [...new Set(store.get('hidden', []).concat(v.url))]);
-    store.set('saved', store.get('saved', []).filter(u => u !== v.url));
+    const prevHidden = store.get('hidden', []), prevSaved = store.get('saved', []);
+    store.set('hidden', [...new Set(prevHidden.concat(v.url))]);
+    store.set('saved', prevSaved.filter(u => u !== v.url));
     showVacancies(false); updateFindCount();
+    toast('Вакансия скрыта', () => { store.set('hidden', prevHidden); store.set('saved', prevSaved); showVacancies(false); updateFindCount(); });
   } else if (act === 'msg') {
     const box = b.closest('.vac').querySelector('.msgBox');
     if (box.innerHTML) { box.innerHTML = ''; return; }
     box.innerHTML = `<textarea class="msg" aria-label="Сообщение работодателю">${esc(employerMessage(v))}</textarea>
-      <div class="acts"><button type="button" class="chip" data-act="copymsg" data-i="${b.dataset.i}">📋 Скопировать сообщение</button>
+      <div class="acts"><button type="button" class="btn btn-secondary" data-act="copymsg" data-i="${b.dataset.i}">Скопировать сообщение</button>
       <span class="small"></span></div>
       <p class="small">Отправь его в отклике или в мессенджере работодателя на странице вакансии.</p>`;
   } else if (act === 'copymsg') {
@@ -702,7 +1019,8 @@ function needTime() {
   st.classList.add('need');
   document.getElementById('err1').textContent = TIME_MSG;
   document.getElementById('err').textContent = TIME_MSG;
-  st.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  go('podbor');
+  setTimeout(() => st.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
 }
 function clearNeedTime() {
   document.getElementById('step1').classList.remove('need');
@@ -731,27 +1049,63 @@ function showVacancies(scroll) {
   const fit = all.filter(m => !m.missingHard.length);
   const almost = all.filter(m => m.missingHard.length);
   renderSaved();
-  let html = `<p class="count">Подходит: ${fit.length} из ${VACANCIES.length}${s.city !== 'any' ? ' · город: ' + esc(s.city) : ''}${onlyStudents ? ' · только где пишут про студентов' : ''}</p>`;
-  if (hidden.size) html += `<p class="small">Скрыто вакансий: ${hidden.size}. <button type="button" class="chip" data-act="unhide">Показать скрытые</button></p>`;
+  renderSummary(s);
+  let html = `<p class="count"><span class="bignum">${fit.length}</span> подходят из ${VACANCIES.length}${onlyStudents ? ' · только где пишут про студентов' : ''}</p>`;
+  if (hidden.size) html += `<p class="small">Скрыто вакансий: ${hidden.size}. <button type="button" class="btn btn-ghost" data-act="unhide">Показать скрытые</button></p>`;
   if (s.city !== 'any' && !CITIES.includes(s.city)) {
     html += `<p class="small">В городе «${esc(s.city)}» пока нет вакансий в нашей базе — показаны только удалённые. Больше вакансий — по ссылкам на rabota.by ниже.</p>`;
   }
   html += fit.length ? fit.map(card).join('')
-    : '<p>Пока ничего не совпало. Попробуй отметить больше свободного времени или увеличить длину смены.</p>';
+    : emptyState(s);
   if (almost.length) {
     html += `<details><summary>Ещё ${almost.length} подходят по времени, но нужно то, чего ты не отметил</summary>${almost.map(card).join('')}</details>`;
   }
   const where = s.city === 'any' || !AREA[s.city] ? 'по всей Беларуси' : esc(s.city);
   const chipsOf = L => `<div class="chips">${L.map(([t, u]) => `<a class="chip" href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} →</a>`).join('')}</div>`;
-  html += `<div class="more"><h3>🔎 Искать ещё на сайтах с работой</h3>
+  html += `<div class="more"><h3>Искать ещё на сайтах с работой</h3>
     <p class="small"><b>rabota.by</b> — откроется с фильтрами: без опыта, ${where}, твоё время.</p>${chipsOf(rabotaLinks(s))}
     ${otherSites(s).map(([name, note, L]) => `<p class="small" style="margin-top:12px"><b>${name}</b> — ${note}</p>${chipsOf(L)}`).join('')}</div>`;
   document.getElementById('list').innerHTML = html;
   const res = document.getElementById('results');
   res.hidden = false;
-  if (scroll) res.scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('noSearch').hidden = true;
+  const tc = document.getElementById('tabCount'); tc.textContent = fit.length; tc.hidden = false;
+  if (scroll) go('vakansii');
   return fit.length;
 }
+
+// Сводка условий над результатами (как «Текущие фильтры» у praca.by): видно, почему список такой
+function renderSummary(s) {
+  const t = [];
+  t.push(s.city !== 'any' ? s.city : 'Любой город');
+  t.push(s.remoteOnly ? 'только удалённо' : s.onsiteOnly ? 'только на месте' : 'на месте и удалённо');
+  if (s.timeText) t.push(s.timeText); else [...s.slots].forEach(id => t.push(labelOf(SLOTS, id).toLowerCase()));
+  t.push('смена до ' + s.maxShift + ' ч');
+  [...s.cats].forEach(id => t.push(labelOf(CATS, id)));
+  document.getElementById('condSummary').innerHTML = t.map(x => `<span class="tag">${esc(x)}</span>`).join('');
+}
+// Пустой результат: не тупик, а конкретные шаги, которые можно нажать
+function emptyState(s) {
+  const tips = [];
+  if (!s.slots.has('weekend')) tips.push(['slot-weekend', 'Добавить выходные']);
+  if (s.maxShift < 8) tips.push(['shift-8', 'Смены до 8 часов']);
+  if (s.cats.size) tips.push(['cats-any', 'Любая сфера']);
+  if (s.city !== 'any') tips.push(['city-any', 'Любой город']);
+  return `<div class="empty"><h3>Пока ничего не совпало</h3>
+    <p class="small">Попробуй расширить условия — список обновится сразу.</p>
+    <div class="acts">${tips.map(([k, t]) => `<button type="button" class="btn btn-secondary" data-relax="${k}">${t}</button>`).join('')}</div></div>`;
+}
+document.getElementById('results').addEventListener('click', e => {
+  const b = e.target.closest('[data-relax]');
+  if (!b) return;
+  const k = b.dataset.relax;
+  if (k === 'slot-weekend') { const c = [...document.querySelectorAll('#slots .chip')].find(x => x.textContent.includes('Выходные')); if (c) c.click(); }
+  if (k === 'shift-8') document.getElementById('maxShift').value = '8';
+  if (k === 'cats-any') document.querySelectorAll('#cats .chip[aria-pressed="true"]').forEach(c => c.click());
+  if (k === 'city-any') document.getElementById('city').value = '';
+  showVacancies(false); updateFindCount();
+});
+document.getElementById('editCond').onclick = () => go('podbor');
 
 // ---- Резюме ----
 document.getElementById('makeResume').onclick = () => {
@@ -770,7 +1124,7 @@ document.getElementById('makeResume').onclick = () => {
     [val('uni') || 'Университет', val('spec')].filter(Boolean).join(', '),
     '',
     'НАВЫКИ',
-    skills.length ? skills.map(x => '• ' + x).join('\n') : '• (отметь навыки в пункте 2)',
+    skills.length ? skills.map(x => '• ' + x).join('\n') : '• (отметь навыки в шаге 2)',
     has.length ? '\nДОПОЛНИТЕЛЬНО\n' + has.map(x => '• ' + x).join('\n') : '',
     '',
     'ОПЫТ И ПРОЕКТЫ',
@@ -786,14 +1140,14 @@ document.getElementById('makeResume').onclick = () => {
   // Вместе с резюме сразу подбираем вакансии (после теста: Марго не увидела вакансий)
   const rv = document.getElementById('resumeVac');
   if (!s.slots.size) {
-    rv.innerHTML = '<span>⚠ Вакансии пока не подобраны: отметь в пункте 1, когда ты свободен.</span>' +
-      '<button type="button" class="chip" id="goStep1">Отметить время ↑</button>';
+    rv.innerHTML = '<span>Вакансии пока не подобраны: отметь во вкладке «Подбор», когда ты свободен.</span>' +
+      '<button type="button" class="btn btn-secondary" id="goStep1">Отметить время</button>';
     document.getElementById('goStep1').onclick = needTime;
   } else {
     const n = showVacancies(false);
     rv.innerHTML = `<span>✓ Под твоё время подходит вакансий: <b>${n}</b></span>` +
-      '<button type="button" class="chip" id="goRes">Показать вакансии ↑</button>';
-    document.getElementById('goRes').onclick = () => document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+      '<button type="button" class="btn btn-secondary" id="goRes">Показать вакансии</button>';
+    document.getElementById('goRes').onclick = () => go('vakansii');
   }
 };
 
@@ -833,6 +1187,57 @@ function updateFindCount() {
     btn.textContent = `Подобрать вакансии (${n})`;
   }, 120);
 }
+// Нижняя кнопка повторяет текст главной (с числом вакансий)
+new MutationObserver(() => { document.getElementById('findSticky').textContent = document.getElementById('find').textContent; })
+  .observe(document.getElementById('find'), { childList: true, characterData: true, subtree: true });
+document.getElementById('findSticky').onclick = () => showVacancies(true);
+// Нижняя кнопка видна, пока человек заполняет шаги 1–2 и не видит основную кнопку
+(function stickyCta() {
+  const bar = document.getElementById('stickyCta');
+  if (!('IntersectionObserver' in window)) return;
+  const seen = new Map();
+  const watch = [document.getElementById('step1'), document.getElementById('find').closest('section'),
+                 document.getElementById('find'), document.getElementById('results')];
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => seen.set(e.target, e.isIntersecting));
+    const inForm = seen.get(watch[0]) || seen.get(watch[1]);
+    bar.hidden = !inForm || seen.get(watch[2]) || seen.get(watch[3]);
+  });
+  watch.forEach(el => io.observe(el));
+})();
+// ---- Вкладки: #home, #podbor, #vakansii, #rezume, #stazhirovki ----
+const TABS = ['home', 'podbor', 'vakansii', 'rezume', 'stazhirovki'];
+function go(tab) {
+  if (!TABS.includes(tab)) tab = 'home';
+  document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== tab; });
+  document.querySelectorAll('.tabs a').forEach(a => { if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  if (location.hash !== '#' + tab) { try { history.replaceState(null, '', '#' + tab); } catch (e) {} }
+  document.documentElement.scrollTop = 0;
+}
+window.addEventListener('hashchange', () => go(location.hash.slice(1)));
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const t = a.getAttribute('href').slice(1);
+  if (TABS.includes(t)) { e.preventDefault(); go(t); }
+});
+go(location.hash.slice(1));
+
+// «Мои анкеты» открываются по кнопке в шапке
+function setProfilesOpen(open) {
+  document.getElementById('profiles').hidden = !open;
+  if (open) document.documentElement.scrollTop = 0;
+  document.getElementById('profToggle').setAttribute('aria-expanded', String(open));
+  document.getElementById('profToggle').textContent = open ? 'Мои анкеты ▴' : 'Мои анкеты ▾';
+}
+document.getElementById('profToggle').onclick = () => setProfilesOpen(document.getElementById('profiles').hidden);
+document.getElementById('profClose').onclick = () => setProfilesOpen(false);
+// «Точные дни и часы» раскрываются сами, если там что-то выбрано (например, из сохранённой анкеты)
+function syncExact() {
+  const used = document.querySelector('#days .chip[aria-pressed="true"]') ||
+    document.getElementById('tFrom').value || document.getElementById('tTo').value;
+  if (used) document.getElementById('exactBox').open = true;
+}
 ['step1', 'skills', 'has', 'jobs'].forEach(id => {
   const el = document.getElementById(id).closest('section') || document.getElementById(id);
   el.addEventListener('click', updateFindCount);
@@ -856,5 +1261,12 @@ PROFILE_IDS.forEach(id => document.getElementById(id).addEventListener('input', 
 </script>
 <script src="internships.js"></script>
 <script src="profiles.js"></script>
+<script>
+new MutationObserver(syncExact).observe(document.getElementById('days'), { attributes: true, subtree: true, attributeFilter: ['aria-pressed'] });
+['tFrom', 'tTo'].forEach(id => document.getElementById(id).addEventListener('change', syncExact));
+// анкета из списка или из файла подставляет время без событий — проверяем после её загрузки
+['profSelect', 'profImport'].forEach(id => document.getElementById(id).addEventListener('change', () => setTimeout(syncExact, 300)));
+syncExact();
+</script>
 </body>
 </html>

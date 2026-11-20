@@ -91,7 +91,7 @@ document.getElementById('profNew').onclick = () => {
   renderProfileList();
   store.set('draft', captureForm());
   say('Новая анкета: форма очищена.');
-  document.getElementById('step1').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (typeof go === 'function') go('podbor');
 };
 
 sel.onchange = () => {

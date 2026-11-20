@@ -109,7 +109,7 @@ function checkIntern(p, st) {
     }
   }
   if (p.uniRx) {
-    if (!st.uni) warn(`только для ${p.uniText}: укажи вуз в пункте 3`);
+    if (!st.uni) warn(`только для ${p.uniText}: укажи вуз во вкладке «Резюме»`);
     else p.uniRx.test(st.uni) ? ok('твой вуз подходит') : bad(`только для ${p.uniText}`);
   }
   if (!lines.length) ok('ограничений по курсу и специальности на сайте нет');
@@ -163,26 +163,29 @@ const VERDICT = { yes: ['b-ok', '✓ Подходишь'], maybe: ['b-warn', '? 
 
 function internCard(p, r) {
   const tracked = store.get('apps', []).some(a => a.id === p.id);
+  // Главное действие зависит от статуса: закрытый набор — напомнить, открытый — подать заявку
+  const primary = r.level !== 'no' && p.status !== 'closed' ? 'btn-primary' : 'btn-secondary';
   const apply = p.apply.type === 'email'
-    ? `<button type="button" class="chip" data-ia="letter" data-id="${p.id}">✉ Составить письмо-заявку</button>`
-    : `<a class="chip" href="${esc(p.apply.url)}" target="_blank" rel="noopener">Подать заявку на сайте →</a>`;
+    ? `<button type="button" class="btn ${primary}" data-ia="letter" data-id="${p.id}">Составить письмо-заявку</button>`
+    : `<a class="btn ${primary}" href="${esc(p.apply.url)}" target="_blank" rel="noopener">Подать заявку на сайте ↗</a>`;
   return `<div class="vac${r.level === 'no' ? ' dim' : ''}" data-card="${p.id}">
-    <div><span class="badge ${VERDICT[r.level][0]}">${VERDICT[r.level][1]}</span><span class="badge ${STATUS[p.status][0]}">${STATUS[p.status][1]}</span></div>
-    <h3 style="margin-top:6px">${esc(p.name)}</h3>
+    <div class="badges"><span class="badge ${VERDICT[r.level][0]}">${VERDICT[r.level][1]}</span><span class="badge ${STATUS[p.status][0]}">${STATUS[p.status][1]}</span></div>
+    <h3>${esc(p.name)}</h3>
     <div class="meta">${esc(p.company)} · ${esc(p.statusText)}</div>
     <ul>${r.lines.map(([c, t]) => `<li class="${c}">${esc(t)}</li>`).join('')}</ul>
+    <details><summary>Условия программы</summary>
     <dl>
       <dt>Кого берут</dt><dd>${esc(p.who)}</dd>
       <dt>Направления</dt><dd>${esc(p.areas)}</dd>
       <dt>Оплата</dt><dd>${esc(p.paid)}</dd>
       <dt>Формат</dt><dd>${esc(p.format)}</dd>
       <dt>Этапы</dt><dd>${p.steps.map(esc).join(' → ')}</dd>
-    </dl>
+    </dl></details>
     <div class="acts">
       ${apply}
-      ${p.apply.type === 'email' ? `<a class="chip" href="${esc(p.apply.url)}" target="_blank" rel="noopener">Страница компании →</a>` : ''}
-      <button type="button" class="chip" data-ia="track" data-id="${p.id}" aria-pressed="${tracked}">${tracked ? '📌 Отслеживается' : '📌 Отслеживать заявку'}</button>
-      ${p.status === 'closed' ? `<button type="button" class="chip" data-ia="remind" data-id="${p.id}">📅 Напомнить проверить набор через 2 недели</button>` : ''}
+      ${p.apply.type === 'email' ? `<a class="btn btn-ghost" href="${esc(p.apply.url)}" target="_blank" rel="noopener">Страница компании ↗</a>` : ''}
+      <button type="button" class="btn btn-ghost" data-ia="track" data-id="${p.id}" aria-pressed="${tracked}">${tracked ? '✓ Отслеживается' : 'Отслеживать заявку'}</button>
+      ${p.status === 'closed' ? `<button type="button" class="btn btn-ghost" data-ia="remind" data-id="${p.id}">Напомнить через 2 недели</button>` : ''}
     </div>
     <div class="letterBox"></div>
   </div>`;
@@ -204,7 +207,7 @@ function renderTracker() {
   const apps = store.get('apps', []);
   const box = document.getElementById('tracker');
   if (!apps.length) { box.innerHTML = ''; return; }
-  box.innerHTML = `<div class="more"><h3>📌 Мои заявки (${apps.length})</h3>
+  box.innerHTML = `<div class="more"><h3>Мои заявки (${apps.length})</h3>
     <p class="small">Нажимай на этап, когда он пройден. Сохраняется в этом браузере.</p>` +
     apps.map(a => {
       const p = INTERNS.find(x => x.id === a.id);
@@ -219,14 +222,14 @@ function renderTracker() {
           const due = addDays(new Date(a.testFrom), p.testDays);
           const left = Math.ceil((due - new Date()) / 864e5);
           test = `<p class="small"><b>Тестовое сдать до ${ruDate(due)}</b> (${left > 0 ? 'осталось ' + left + ' дн.' : left === 0 ? 'сегодня' : 'срок прошёл'}).
-            <button type="button" class="chip" data-ia="testcal" data-id="${p.id}">📅 Добавить в календарь</button></p>`;
+            <button type="button" class="btn btn-ghost" data-ia="testcal" data-id="${p.id}">Добавить в календарь</button></p>`;
         } else {
-          test = `<p class="small">На тестовое даётся ${p.testDays} дней. <button type="button" class="chip" data-ia="testgot" data-id="${p.id}">Я получил(а) тестовое</button></p>`;
+          test = `<p class="small">На тестовое даётся ${p.testDays} дней. <button type="button" class="btn btn-ghost" data-ia="testgot" data-id="${p.id}">Я получил(а) тестовое</button></p>`;
         }
       }
       return `<div class="vac"><h3>${esc(p.name)}</h3><div class="meta">${esc(p.company)} · пройдено этапов: ${a.done} из ${p.steps.length}</div>
         <div class="steps">${steps}</div>${test}
-        <div class="acts"><button type="button" class="chip" data-ia="untrack" data-id="${p.id}">Убрать из списка</button></div></div>`;
+        <div class="acts"><button type="button" class="btn btn-ghost" data-ia="untrack" data-id="${p.id}">Убрать из списка</button></div></div>`;
     }).join('') + '</div>';
 }
 
@@ -253,9 +256,9 @@ document.getElementById('interns').addEventListener('click', e => {
       const mailto = `mailto:${p.apply.email}?subject=${encodeURIComponent(L.subject)}&body=${encodeURIComponent(L.body)}`;
       box.innerHTML = `<p class="small" style="margin-bottom:4px">Кому: <b style="user-select:all">${esc(p.apply.email)}</b> · Тема: <b style="user-select:all">${esc(L.subject)}</b></p>
         <textarea class="msg" aria-label="Письмо-заявка">${esc(L.body)}</textarea>
-        <div class="acts"><button type="button" class="chip" data-ia="copyletter" data-id="${p.id}">📋 Скопировать письмо</button>
-        <a class="chip" href="${esc(mailto)}">Открыть в почте</a><span class="small"></span></div>
-        <p class="small">Не забудь прикрепить резюме: его можно скачать в Word в пункте 3.</p>`;
+        <div class="acts"><button type="button" class="btn btn-secondary" data-ia="copyletter" data-id="${p.id}">Скопировать письмо</button>
+        <a class="btn btn-ghost" href="${esc(mailto)}">Открыть в почте</a><span class="small"></span></div>
+        <p class="small">Не забудь прикрепить резюме: его можно скачать в Word во вкладке «Резюме».</p>`;
       break;
     }
     case 'copyletter': {
