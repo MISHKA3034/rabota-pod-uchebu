@@ -282,16 +282,20 @@ details.exact { margin-top: var(--s4); border-top: 1px solid var(--line); paddin
                            color: var(--muted); background: var(--surface-2); border-radius: var(--r-pill); padding: 1px 8px; }
 
 /* ---- резюме как документ ---- */
-#resume { background: #fff; color: #1D1A35; border: 1px solid var(--line); border-radius: var(--r-md); padding: var(--s6) var(--s5);
-          margin: 0; font: var(--fs-sm)/1.6 var(--font); box-shadow: var(--shadow); }
-@media (max-width: 520px) { #resume { padding: var(--s5) var(--s4); } }
-#resume .r-name { display: block; font-size: 1.5rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
-#resume .r-contacts { color: #565273; margin: 4px 0 0; }
-#resume .r-sec { margin-top: var(--s4); }
-#resume .r-h { display: block; font-size: var(--fs-xs); font-weight: 800; letter-spacing: .1em; color: #5B3FE0;
-               border-bottom: 2px solid #ECE8FF; padding-bottom: 4px; margin-bottom: 6px; }
-#resume ul { margin: 0; padding-left: 18px; }
-#resume p { margin: 0; }
+/* лист резюме — как в образце: Calibri, шапка по центру, разделы заглавными с серой линией */
+#resume { background: #fff; color: #222831; border: 1px solid var(--line); border-radius: 6px; padding: 36px 40px;
+          margin: 0; font: 13px/1.45 Calibri, Carlito, 'Segoe UI', Arial, sans-serif; box-shadow: 0 10px 30px rgba(20, 20, 60, .12);
+          max-width: 720px; margin-inline: auto; }
+@media (max-width: 520px) { #resume { padding: 22px 18px; font-size: 12.5px; } }
+#resume p { margin: 0 0 3px; }
+#resume .cv-name { text-align: center; font-size: 22px; font-weight: 700; color: #192533; letter-spacing: .01em; margin-bottom: 3px; line-height: 1.2; }
+#resume .cv-role { text-align: center; font-size: 14px; }
+#resume .cv-contacts { text-align: center; }
+#resume .cv-h { font-size: 14px; font-weight: 700; color: #1C2734; margin: 14px 0 5px; padding-bottom: 2px; border-bottom: 1px solid #ADB3BA; letter-spacing: 0; }
+#resume .cv-pt { margin: 6px 0 2px; }
+#resume .cv-meta { font-style: italic; color: #525860; font-size: .94em; }
+#resume .cv-ul { margin: 0 0 2px; padding-left: 20px; }
+#resume .cv-ul li { margin: 0 0 2px; }
 .checklist { margin: 0 0 var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--warn-soft); color: var(--text); }
 .checklist b { color: var(--warn); }
 .checklist ul { margin: 6px 0 0; padding-left: 18px; }
@@ -310,7 +314,7 @@ details.exact { margin-top: var(--s4); border-top: 1px solid var(--line); paddin
 @media print {
   body * { visibility: hidden; }
   #resume, #resume * { visibility: visible; }
-  #resume { position: absolute; left: 0; top: 0; border: 0; box-shadow: none; background: none; font: 12pt/1.5 Georgia, serif; }
+  #resume { position: absolute; left: 0; top: 0; border: 0; box-shadow: none; background: none; padding: 0; max-width: none; font: 10pt/1.4 Calibri, Carlito, Arial, sans-serif; }
 }
 </style>
 </head>
@@ -515,22 +519,34 @@ details.exact { margin-top: var(--s4); border-top: 1px solid var(--line); paddin
     <div class="banner" style="--img:url('img/resume.jpg')">
       <p class="eyebrow">Резюме</p>
       <h2>Резюме за минуту</h2>
-      <p>Навыки и время возьмём из «Подбора». Добавь пару строк о себе.</p>
+      <p>Строгое резюме в деловом стиле: шапка, профиль, проекты, образование, навыки, языки. Навыки возьмём из «Подбора».</p>
     </div>
     <section>
+      <p class="stepno">Шапка</p>
       <div class="row">
-        <div><label class="f" for="name">Имя и фамилия</label><input type="text" id="name"></div>
-        <div><label class="f" for="contact">Телефон или Telegram</label><input type="text" id="contact"></div>
+        <div><label class="f" for="name">Фамилия Имя Отчество</label><input type="text" id="name" placeholder="например, Иванова Мария Сергеевна" autocomplete="name"></div>
+        <div><label class="f" for="role">Желаемая должность</label><input type="text" id="role" placeholder="например, Курьер / Бариста | Студентка"></div>
       </div>
+      <label class="f" for="contact">Контакты <span class="hint">(через запятую: телефон, Telegram, почта, ссылка)</span></label>
+      <input type="text" id="contact" placeholder="+375 29 000-00-00, Telegram: @masha, masha@mail.ru">
+
+      <label class="f" for="about">Профессиональный профиль <span class="hint">(2–3 предложения о себе)</span></label>
+      <textarea id="about" placeholder="Студентка 2 курса экономического факультета БГУ. Ответственная, быстро учусь, люблю общаться с людьми. Ищу подработку, которую можно совмещать с учёбой."></textarea>
+      <div class="acts" style="margin-top:6px"><button type="button" class="btn btn-ghost" id="aboutDraft">Составить черновик из моих данных</button></div>
+
+      <label class="f" for="exp">Проекты и опыт <span class="hint">(каждый с новой строки: «Название | где, когда — что делал»)</span></label>
+      <textarea id="exp" placeholder="Волонтёр | Минский полумарафон, 2025 — встречала участников, выдавала стартовые пакеты
+Курсовой проект | БГУ, 2026 — сайт для кофейни в Figma
+Промоутер | лето 2025 — раздача листовок, консультации покупателей"></textarea>
+
+      <p class="stepno" style="margin-top:20px">Образование и языки</p>
       <div class="row">
-        <div><label class="f" for="uni">Университет</label><input type="text" id="uni" placeholder="например, БГУ"></div>
-        <div><label class="f" for="spec">Специальность, курс</label><input type="text" id="spec" placeholder="например, экономика, 2 курс"></div>
+        <div><label class="f" for="uni">Университет</label><input type="text" id="uni" placeholder="например, Белорусский государственный университет"></div>
+        <div><label class="f" for="spec">Специальность, курс</label><input type="text" id="spec" placeholder="например, Экономика, 2 курс"></div>
       </div>
-      <label class="f" for="exp">Опыт и проекты <span class="hint">(нет работы? это тоже опыт)</span></label>
-      <textarea id="exp" placeholder="Каждый пункт с новой строки. Например:
-Курсовой проект: сайт для кофейни (Figma)
-Волонтёр на городском марафоне
-Летняя подработка промоутером"></textarea>
+      <label class="f" for="langs">Языки</label>
+      <input type="text" id="langs" placeholder="Русский — свободно; белорусский — свободно; английский — B1">
+      <p class="small" style="margin-top:8px">Навыки берутся из вкладки «Подбор» (шаг 2).</p>
       <button class="main" id="makeResume">Сделать резюме</button>
       <div id="resumeBox" hidden>
         <div class="notice" id="resumeVac"></div>
@@ -1183,47 +1199,98 @@ document.getElementById('results').addEventListener('click', e => {
 });
 
 // ---- Резюме ----
-// Резюме собирается только из того, что человек заполнил: никаких заглушек вроде «Университет»
-// или «(отметь навыки…)» в готовом тексте (замечание из теста: резюме выглядело сломанным).
-// Чего не хватает — показываем отдельным списком с кнопками «где заполнить».
+// Резюме в деловом стиле по образцу (шапка по центру, разделы с линией, проекты «Название | где, когда» + пункт).
+// Собирается только из того, что человек заполнил — без заглушек; чего не хватает — отдельным списком.
+// Один и тот же HTML идёт в предпросмотр на сайте и в файл Word, поэтому они выглядят одинаково.
 let resumeText = '';
+const COURSE_TXT = { 1: '1 курс', 2: '2 курс', 3: '3 курс', 4: '4 курс', 5: '5 курс', 6: '6 курс', grad: 'выпускник' };
+function parseProject(line) {
+  // «Название | где, когда — что делал» → { title, meta, desc }
+  let title = line, meta = '', desc = '';
+  const dash = line.search(/\s[—–-]\s/);
+  if (dash > 0) { desc = line.slice(dash).replace(/^\s[—–-]\s/, '').trim(); title = line.slice(0, dash).trim(); }
+  const bar = title.indexOf('|');
+  if (bar > 0) { meta = title.slice(bar + 1).trim(); title = title.slice(0, bar).trim(); }
+  if (desc) desc = desc[0].toUpperCase() + desc.slice(1);
+  return { title, meta, desc };
+}
 function buildResume() {
   const s = readStudent();
   const val = id => document.getElementById(id).value.trim();
   const skills = [...s.skills].map(id => labelOf(SKILLS, id)).filter(Boolean);
   const has = [...s.has].map(id => labelOf(HAS, id)).filter(Boolean);
-  const exp = [...s.jobs].map(id => labelOf(JOBS, id)).filter(Boolean)
-    .concat(val('exp').split('\n').map(x => x.replace(/^[•\-–\s]+/, '').trim()).filter(Boolean));
-  const name = val('name');
-  const contacts = [s.city !== 'any' ? s.city : '', val('contact')].filter(Boolean);
-  const study = [val('uni'), val('spec')].filter(Boolean).join(', ');
-  // «Цель» и «Готовность к работе» убраны после первого теста: это обсуждают напрямую с работодателем
-  const secs = [];
-  if (study) secs.push(['ОБРАЗОВАНИЕ', [study]]);
-  if (skills.length) secs.push(['НАВЫКИ', skills]);
-  if (exp.length) secs.push(['ОПЫТ И ПРОЕКТЫ', exp]);
-  if (has.length) secs.push(['ДОПОЛНИТЕЛЬНО', has]);
-  const missing = [];
-  if (!val('contact')) missing.push(['телефон или Telegram — чтобы работодатель мог ответить', 'contact']);
-  if (!study) missing.push(['университет и специальность', 'uni']);
-  if (!skills.length) missing.push(['навыки — отметь их во вкладке «Подбор», шаг 2', 'tab:podbor']);
-  if (!exp.length) missing.push(['опыт и проекты — подойдут курсовой, волонтёрство, кружок', 'exp']);
-  return { name, contacts, secs, missing };
+  const projects = val('exp').split('\n').map(x => x.replace(/^[•\s]+/, '').trim()).filter(Boolean).map(parseProject)
+    .concat([...s.jobs].map(id => labelOf(JOBS, id)).filter(Boolean).map(t => ({ title: t, meta: '', desc: '' })));
+  const contacts = (s.city !== 'any' ? [s.city] : []).concat(val('contact').split(/[,;]/).map(x => x.trim()).filter(Boolean));
+  let spec = val('spec');
+  const course = COURSE_TXT[document.getElementById('course').value];
+  if (course && spec && !/курс|выпускни/i.test(spec)) spec += ', ' + course;
+  if (course && !spec) spec = course;
+  return { name: val('name'), role: val('role'), contacts, about: val('about'), projects,
+    uni: val('uni'), spec, skills, has, langs: val('langs') };
 }
+function resumeMissing(r) {
+  const m = [];
+  if (!r.contacts.length || (r.contacts.length === 1 && readStudent().city !== 'any')) m.push(['контакты — телефон или Telegram, чтобы работодатель мог ответить', 'contact']);
+  if (!r.about) m.push(['профессиональный профиль — 2–3 предложения о себе', 'about']);
+  if (!r.projects.length) m.push(['проекты и опыт — подойдут курсовой, волонтёрство, кружок', 'exp']);
+  if (!r.uni) m.push(['университет и специальность', 'uni']);
+  if (!r.skills.length) m.push(['навыки — отметь их во вкладке «Подбор», шаг 2', 'tab:podbor']);
+  if (!r.langs) m.push(['языки', 'langs']);
+  return m;
+}
+function resumeHtml(r) {
+  const sec = (h, body) => `<h2 class="cv-h">${h}</h2>${body}`;
+  let out = `<p class="cv-name">${esc(r.name.toUpperCase())}</p>`;
+  if (r.role) out += `<p class="cv-role">${esc(r.role)}</p>`;
+  if (r.contacts.length) out += `<p class="cv-contacts">${r.contacts.map(esc).join('  •  ')}</p>`;
+  if (r.about) out += sec('ПРОФЕССИОНАЛЬНЫЙ ПРОФИЛЬ', `<p class="cv-p">${esc(r.about)}</p>`);
+  if (r.projects.length) out += sec('ПРОЕКТЫ И ОПЫТ', r.projects.map(p =>
+    `<p class="cv-pt"><b>${esc(p.title)}</b>${p.meta ? `<i class="cv-meta">  |  ${esc(p.meta)}</i>` : ''}</p>` +
+    (p.desc ? `<ul class="cv-ul"><li>${esc(p.desc)}</li></ul>` : '')).join(''));
+  if (r.uni || r.spec) out += sec('ОБРАЗОВАНИЕ', `<p class="cv-p">${r.uni ? `<b>${esc(r.uni)}</b>` : ''}${r.uni && r.spec ? '  |  ' : ''}${esc(r.spec.replace(/,\s*/g, '  |  '))}</p>`);
+  if (r.skills.length || r.has.length) out += sec('НАВЫКИ',
+    (r.skills.length ? `<p class="cv-p">${esc(r.skills.join(', '))}.</p>` : '') +
+    (r.has.length ? `<p class="cv-p">Дополнительно: ${esc(r.has.join(', ').toLowerCase())}.</p>` : ''));
+  if (r.langs) out += sec('ЯЗЫКИ', `<p class="cv-p">${esc(r.langs)}</p>`);
+  return out;
+}
+function resumePlain(r) {
+  const L = [r.name.toUpperCase()];
+  if (r.role) L.push(r.role);
+  if (r.contacts.length) L.push(r.contacts.join('  •  '));
+  const sec = (h, lines) => { L.push('', h, ...lines); };
+  if (r.about) sec('ПРОФЕССИОНАЛЬНЫЙ ПРОФИЛЬ', [r.about]);
+  if (r.projects.length) sec('ПРОЕКТЫ И ОПЫТ', [].concat(...r.projects.map(p => [p.title + (p.meta ? '  |  ' + p.meta : '')].concat(p.desc ? ['• ' + p.desc] : []))));
+  if (r.uni || r.spec) sec('ОБРАЗОВАНИЕ', [[r.uni, r.spec].filter(Boolean).join('  |  ')]);
+  if (r.skills.length || r.has.length) sec('НАВЫКИ', [r.skills.length ? r.skills.join(', ') + '.' : '', r.has.length ? 'Дополнительно: ' + r.has.join(', ').toLowerCase() + '.' : ''].filter(Boolean));
+  if (r.langs) sec('ЯЗЫКИ', [r.langs]);
+  return L.join('\n');
+}
+let lastResume = null;
 function renderResume() {
   const r = buildResume();
-  const box = document.getElementById('resume');
-  box.innerHTML = `<b class="r-name">${esc(r.name)}</b>` +
-    (r.contacts.length ? `<p class="r-contacts">${esc(r.contacts.join(' · '))}</p>` : '') +
-    r.secs.map(([h, items]) => `<div class="r-sec"><b class="r-h">${h}</b>` +
-      (items.length === 1 && h === 'ОБРАЗОВАНИЕ' ? `<p>${esc(items[0])}</p>` : `<ul>${items.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`) + '</div>').join('');
-  resumeText = [r.name.toUpperCase(), r.contacts.join(' · '), '']
-    .concat(...r.secs.map(([h, items]) => [h, ...(h === 'ОБРАЗОВАНИЕ' ? items : items.map(x => '• ' + x)), '']))
-    .join('\n').replace(/\n{3,}/g, '\n\n').trim();
-  const ch = document.getElementById('resumeCheck');
-  ch.innerHTML = r.missing.length ? `<div class="checklist"><b>Резюме станет сильнее, если добавить:</b><ul>${r.missing.map(([t, where]) =>
+  lastResume = r;
+  document.getElementById('resume').innerHTML = resumeHtml(r);
+  resumeText = resumePlain(r);
+  const miss = resumeMissing(r);
+  document.getElementById('resumeCheck').innerHTML = miss.length ? `<div class="checklist"><b>Резюме станет сильнее, если добавить:</b><ul>${miss.map(([t, where]) =>
     `<li>${esc(t)} <button type="button" class="btn btn-ghost" data-fill="${where}">${where === 'tab:podbor' ? 'Перейти' : 'Заполнить'}</button></li>`).join('')}</ul></div>` : '';
 }
+// Черновик «Профессионального профиля» из того, что уже известно
+document.getElementById('aboutDraft').onclick = () => {
+  const r = buildResume();
+  const parts = [];
+  const study = [r.spec, r.uni].filter(Boolean).join(', ');
+  parts.push(study ? `Студент(ка): ${study}.` : 'Студент(ка) дневной формы обучения.');
+  if (r.skills.length) parts.push(`Сильные стороны: ${r.skills.slice(0, 4).map(x => x[0].toLowerCase() + x.slice(1)).join(', ')}.`);
+  if (r.projects.length) parts.push(`Есть опыт: ${r.projects.slice(0, 2).map(p => p.title[0].toLowerCase() + p.title.slice(1)).join(', ')}.`);
+  parts.push('Ищу подработку, которую можно совмещать с учёбой; быстро учусь и ответственно отношусь к работе.');
+  const ta = document.getElementById('about'), prev = ta.value;
+  ta.value = parts.join(' ');
+  ta.dispatchEvent(new Event('input', { bubbles: true }));
+  toast(prev ? 'Черновик заменил текст — поправь его под себя' : 'Черновик готов — поправь его под себя', prev ? () => { ta.value = prev; ta.dispatchEvent(new Event('input', { bubbles: true })); } : null);
+};
 document.getElementById('resumeCheck').addEventListener('click', e => {
   const b = e.target.closest('[data-fill]');
   if (!b) return;
@@ -1232,7 +1299,7 @@ document.getElementById('resumeCheck').addEventListener('click', e => {
   const f = document.getElementById(w); f.scrollIntoView({ behavior: 'smooth', block: 'center' }); f.focus();
 });
 // После первого «Сделать резюме» оно обновляется само, пока человек дописывает поля
-['name', 'contact', 'uni', 'spec', 'exp'].forEach(id => document.getElementById(id).addEventListener('input', () => {
+['name', 'role', 'contact', 'about', 'uni', 'spec', 'exp', 'langs'].forEach(id => document.getElementById(id).addEventListener('input', () => {
   if (!document.getElementById('resumeBox').hidden && document.getElementById('name').value.trim()) renderResume();
 }));
 document.getElementById('makeResume').onclick = () => {
@@ -1268,20 +1335,17 @@ document.getElementById('copy').onclick = async () => {
 };
 
 // ---- Резюме: Word и печать (просьба Леры и Марго из теста; у praca.by есть «Скачать в Word») ----
+// Word: тот же HTML, что и в предпросмотре, со стилями образца (Calibri, шапка по центру, разделы с серой линией)
+const CV_WORD_CSS = `@page Section1 { size: 21cm 29.7cm; margin: 1.6cm 1.85cm 1.5cm 1.85cm; } div.Section1 { page: Section1; }
+  body { font-family: Calibri, Arial, sans-serif; font-size: 9pt; color: #222831; }
+  p { margin: 0 0 2pt; } .cv-name { text-align: center; font-size: 16pt; font-weight: bold; color: #192533; margin: 0 0 2pt; }
+  .cv-role { text-align: center; font-size: 10pt; margin: 0 0 2pt; } .cv-contacts { text-align: center; font-size: 9pt; margin: 0 0 2pt; }
+  h2.cv-h { font-size: 10pt; font-weight: bold; color: #1C2734; margin: 8pt 0 3pt; padding-bottom: 1pt; border-bottom: .75pt solid #ADB3BA; }
+  .cv-pt { margin: 3.5pt 0 1pt; } .cv-meta { font-style: italic; color: #525860; font-size: 8.5pt; }
+  ul.cv-ul { margin: 0 0 1pt 15pt; padding: 0; } ul.cv-ul li { margin: 0 0 1pt; }`;
 document.getElementById('toWord').onclick = () => {
-  const lines = resumeText.split('\n');
-  const body = lines.map((l, i) => {
-    if (!l.trim()) return '';
-    if (i === 0) return `<h1>${esc(l)}</h1>`;
-    if (i === 1) return `<p class="c">${esc(l)}</p>`;
-    if (isHeading(l)) return `<h3>${esc(l)}</h3>`;
-    return `<p>${esc(l)}</p>`;
-  }).join('\n');
-  const html = `<html><head><meta charset="utf-8"><style>
-    body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1D1A35} h1{font-size:20pt;margin:0 0 2pt}
-    p.c{color:#565273;margin:0 0 8pt}
-    h3{font-size:10pt;letter-spacing:1.5pt;color:#5B3FE0;border-bottom:1.5pt solid #ECE8FF;margin:14pt 0 4pt;padding-bottom:2pt} p{margin:0 0 3pt}
-  </style></head><body>${body}</body></html>`;
+  if (!lastResume) renderResume();
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset="utf-8"><title>Резюме</title><style>${CV_WORD_CSS}</style></head><body><div class="Section1">${resumeHtml(lastResume)}</div></body></html>`;
   downloadFile('Резюме.doc', 'application/msword', '﻿' + html);
 };
 document.getElementById('toPrint').onclick = () => window.print();
@@ -1382,7 +1446,7 @@ function syncExact() {
 });
 
 // ---- Профиль сохраняется в браузере (одни и те же данные не вводятся заново) ----
-const PROFILE_IDS = ['name', 'contact', 'uni', 'spec', 'exp', 'course', 'eduForm'];
+const PROFILE_IDS = ['name', 'role', 'contact', 'about', 'uni', 'spec', 'exp', 'langs', 'course', 'eduForm'];
 (function restoreProfile() {
   const p = store.get('profile', {});
   PROFILE_IDS.forEach(id => { if (p[id] != null) document.getElementById(id).value = p[id]; });

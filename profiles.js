@@ -1,6 +1,6 @@
 // ---- Мои анкеты: сохранить заполненную форму, выбрать готовую, создать новую ----
 // Всё хранится в браузере (localStorage). Черновик текущей формы сохраняется сам.
-const FIELD_IDS = ['city', 'workFormat', 'tFrom', 'tTo', 'maxShift', 'name', 'contact', 'uni', 'spec', 'exp', 'course', 'eduForm'];
+const FIELD_IDS = ['city', 'workFormat', 'tFrom', 'tTo', 'maxShift', 'name', 'role', 'contact', 'about', 'uni', 'spec', 'exp', 'langs', 'course', 'eduForm'];
 const FIELD_DEFAULTS = { workFormat: 'any', maxShift: '5', eduForm: 'day' };
 const CHIP_GROUPS = ['slots', 'days', 'cats', 'skills', 'has', 'jobs', 'dirs'];
 const CUSTOM_LISTS = { skills: SKILLS, has: HAS, jobs: JOBS };
