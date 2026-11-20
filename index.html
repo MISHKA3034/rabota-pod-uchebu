@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Работа под учёбу</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%229%22 fill=%22%235B3FE0%22/%3E%3Ctext x=%2216%22 y=%2221%22 font-family=%22Arial%22 font-weight=%22700%22 font-size=%2213%22 fill=%22white%22 text-anchor=%22middle%22%3E%D0%A0%D0%A3%3C/text%3E%3C/svg%3E">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -268,10 +269,34 @@ details.exact { margin-top: var(--s4); border-top: 1px solid var(--line); paddin
 @media (max-width: 720px) { .toast { bottom: calc(var(--tabbar) + 84px + env(safe-area-inset-bottom, 0px)); } }
 .toast button { background: transparent; border: 0; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; min-height: 36px; padding: 0 6px; }
 
+/* ---- страницы вакансий и «уже открывал(а)» ---- */
+.pager { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin-top: var(--s5); }
+.pager .btn { min-width: 44px; min-height: 44px; }
+.pager .btn[disabled] { opacity: .4; cursor: default; }
+.pager .pg-num[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.pg-gap { color: var(--muted); padding: 0 4px; }
+.pg-info { text-align: center; margin-top: var(--s2); }
+#list > .pg-info:first-of-type { text-align: left; }
+.vac.seen { border-left-color: var(--line-strong); }
+.vac.seen .top h3::after { content: "Уже открывал(а)"; display: inline-block; margin-left: 8px; vertical-align: 2px; font-size: var(--fs-xs); font-weight: 600;
+                           color: var(--muted); background: var(--surface-2); border-radius: var(--r-pill); padding: 1px 8px; }
+
 /* ---- резюме как документ ---- */
-pre#resume { white-space: pre-wrap; background: var(--surface); color: var(--text); border: 1px solid var(--line);
-             border-radius: var(--r-md); padding: var(--s5); margin: 0; font: var(--fs-sm)/1.6 var(--font); box-shadow: var(--shadow); }
-pre#resume b { font-weight: 800; letter-spacing: .04em; }
+#resume { background: #fff; color: #1D1A35; border: 1px solid var(--line); border-radius: var(--r-md); padding: var(--s6) var(--s5);
+          margin: 0; font: var(--fs-sm)/1.6 var(--font); box-shadow: var(--shadow); }
+@media (max-width: 520px) { #resume { padding: var(--s5) var(--s4); } }
+#resume .r-name { display: block; font-size: 1.5rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
+#resume .r-contacts { color: #565273; margin: 4px 0 0; }
+#resume .r-sec { margin-top: var(--s4); }
+#resume .r-h { display: block; font-size: var(--fs-xs); font-weight: 800; letter-spacing: .1em; color: #5B3FE0;
+               border-bottom: 2px solid #ECE8FF; padding-bottom: 4px; margin-bottom: 6px; }
+#resume ul { margin: 0; padding-left: 18px; }
+#resume p { margin: 0; }
+.checklist { margin: 0 0 var(--s3); padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--warn-soft); color: var(--text); }
+.checklist b { color: var(--warn); }
+.checklist ul { margin: 6px 0 0; padding-left: 18px; }
+.checklist li { margin: 4px 0; }
+.checklist .btn { min-height: 34px; padding: 4px 10px; margin-left: 4px; }
 
 /* ---- нижняя кнопка «Подобрать» (только во вкладке «Подбор») ---- */
 .stickycta { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: color-mix(in srgb, var(--bg) 92%, transparent);
@@ -471,6 +496,12 @@ pre#resume b { font-weight: 800; letter-spacing: .04em; }
           <option value="short">Сначала короткие смены</option>
           <option value="student">Сначала где пишут про студентов</option>
         </select>
+        <select id="pageSize" aria-label="Сколько вакансий на странице">
+          <option value="10">По 10 на странице</option>
+          <option value="20">По 20 на странице</option>
+          <option value="50">По 50 на странице</option>
+          <option value="0">Все на одной странице</option>
+        </select>
         <label class="check" style="margin:0"><input type="checkbox" id="onlyStudents"> Только где прямо пишут про студентов</label>
       </div>
       <div id="savedBox"></div>
@@ -503,7 +534,8 @@ pre#resume b { font-weight: 800; letter-spacing: .04em; }
       <button class="main" id="makeResume">Сделать резюме</button>
       <div id="resumeBox" hidden>
         <div class="notice" id="resumeVac"></div>
-        <pre id="resume"></pre>
+        <div id="resumeCheck"></div>
+        <div id="resume" aria-label="Готовое резюме"></div>
         <div class="acts">
           <button type="button" class="btn btn-primary" id="toWord">Скачать в Word</button>
           <button type="button" class="btn btn-ghost" id="copy">Скопировать</button>
@@ -932,7 +964,7 @@ function card(m) {
   if (m.customHits.length) lines.push(`<li class="ok">твой опыт/умения: ${m.customHits.map(esc).join(', ')}</li>`);
   m.missingHard.forEach(n => lines.push(`<li class="bad">нужно: ${esc(n.label)}</li>`));
   m.softNotes.forEach(n => lines.push(`<li class="warn">${esc(n.label)}</li>`));
-  return `<div class="vac${m.missingHard.length ? ' dim' : ''}">
+  return `<div class="vac${m.missingHard.length ? ' dim' : ''}${store.get('opened', []).includes(v.url) ? ' seen' : ''}">
     ${vacTop(v)}
     <div class="meta">${esc(v.company)} · ${esc(v.city)}${v.remote ? ' · удалённо' : ' · на месте'} · источник: ${esc(v.source || 'rabota.by')}</div>
     <ul>${lines.join('')}</ul>
@@ -948,7 +980,7 @@ function vacActions(v) {
   const i = VACANCIES.indexOf(v);
   const saved = store.get('saved', []).includes(v.url);
   return `<div class="acts">
-    <a class="btn btn-primary" href="${v.url}" target="_blank" rel="noopener">Открыть вакансию<span class="sr"> на сайте</span> ↗</a>
+    <a class="btn btn-primary" data-open href="${v.url}" target="_blank" rel="noopener">Открыть вакансию<span class="sr"> на сайте</span> ↗</a>
     <button type="button" class="btn btn-ghost" data-act="msg" data-i="${i}">Написать работодателю</button>
     <button type="button" class="btn btn-ghost" data-act="save" data-i="${i}" aria-pressed="${saved}">${saved ? '★ Сохранено' : '☆ Сохранить'}</button>
     <button type="button" class="btn btn-ghost" data-act="hide" data-i="${i}">Скрыть</button>
@@ -983,21 +1015,21 @@ document.getElementById('results').addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
   if (!b) return;
   const act = b.dataset.act;
-  if (act === 'unhide') { store.set('hidden', []); showVacancies(false); updateFindCount(); return; }
+  if (act === 'unhide') { store.set('hidden', []); showVacancies(false, true); updateFindCount(); return; }
   const v = VACANCIES[Number(b.dataset.i)];
   if (!v) return;
   if (act === 'save') {
     const s = store.get('saved', []);
     const was = s.includes(v.url);
     store.set('saved', was ? s.filter(u => u !== v.url) : s.concat(v.url));
-    showVacancies(false);
+    showVacancies(false, true);
     toast(was ? 'Убрано из сохранённых' : 'Сохранено — список вверху результатов');
   } else if (act === 'hide') {
     const prevHidden = store.get('hidden', []), prevSaved = store.get('saved', []);
     store.set('hidden', [...new Set(prevHidden.concat(v.url))]);
     store.set('saved', prevSaved.filter(u => u !== v.url));
-    showVacancies(false); updateFindCount();
-    toast('Вакансия скрыта', () => { store.set('hidden', prevHidden); store.set('saved', prevSaved); showVacancies(false); updateFindCount(); });
+    showVacancies(false, true); updateFindCount();
+    toast('Вакансия скрыта', () => { store.set('hidden', prevHidden); store.set('saved', prevSaved); showVacancies(false, true); updateFindCount(); });
   } else if (act === 'msg') {
     const box = b.closest('.vac').querySelector('.msgBox');
     if (box.innerHTML) { box.innerHTML = ''; return; }
@@ -1032,7 +1064,27 @@ function clearNeedTime() {
 
 document.getElementById('find').onclick = () => showVacancies(true);
 
-function showVacancies(scroll) {
+// Страницы с вакансиями (просьба из теста): по 10 / 20 / 50 или все сразу
+let vacPage = 1;
+const pageSizeSel = document.getElementById('pageSize');
+pageSizeSel.value = String(store.get('pageSize', 10));
+function pagerHtml(page, pages, from, to, total) {
+  if (pages <= 1) return '';
+  const nums = [];
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i - page) <= 1) nums.push(i);
+    else if (nums[nums.length - 1] !== '…') nums.push('…');
+  }
+  return `<nav class="pager" aria-label="Страницы вакансий">
+    <button type="button" class="btn btn-ghost" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>← Назад</button>
+    ${nums.map(n => n === '…' ? '<span class="pg-gap">…</span>'
+      : `<button type="button" class="btn btn-ghost pg-num" data-page="${n}" ${n === page ? 'aria-current="page"' : ''}>${n}</button>`).join('')}
+    <button type="button" class="btn btn-ghost" data-page="${page + 1}" ${page === pages ? 'disabled' : ''}>Вперёд →</button>
+  </nav><p class="small pg-info">Показаны ${from}–${to} из ${total}</p>`;
+}
+
+function showVacancies(scroll, keepPage) {
+  if (!keepPage) vacPage = 1;
   const s = readStudent();
   if (!s.slots.size) { needTime(); return -1; }
   clearNeedTime();
@@ -1055,7 +1107,13 @@ function showVacancies(scroll) {
   if (s.city !== 'any' && !CITIES.includes(s.city)) {
     html += `<p class="small">В городе «${esc(s.city)}» пока нет вакансий в нашей базе — показаны только удалённые. Больше вакансий — по ссылкам на rabota.by ниже.</p>`;
   }
-  html += fit.length ? fit.map(card).join('')
+  const size = Number(pageSizeSel.value) || fit.length || 1;
+  const pages = Math.max(1, Math.ceil(fit.length / size));
+  vacPage = Math.min(Math.max(1, vacPage), pages);
+  const from = (vacPage - 1) * size;
+  const shown = fit.slice(from, from + size);
+  if (fit.length && pages > 1) html += `<p class="small pg-info">Страница ${vacPage} из ${pages} · показаны ${from + 1}–${from + shown.length} из ${fit.length}</p>`;
+  html += fit.length ? shown.map(card).join('') + pagerHtml(vacPage, pages, from + 1, from + shown.length, fit.length)
     : emptyState(s);
   if (almost.length) {
     html += `<details><summary>Ещё ${almost.length} подходят по времени, но нужно то, чего ты не отметил</summary>${almost.map(card).join('')}</details>`;
@@ -1106,36 +1164,88 @@ document.getElementById('results').addEventListener('click', e => {
   showVacancies(false); updateFindCount();
 });
 document.getElementById('editCond').onclick = () => go('podbor');
+// Переключение страниц: список сверху, чтобы начать читать с первой вакансии страницы
+document.getElementById('results').addEventListener('click', e => {
+  const b = e.target.closest('[data-page]');
+  if (!b || b.disabled) return;
+  vacPage = Number(b.dataset.page);
+  showVacancies(false, true);
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+pageSizeSel.addEventListener('change', () => { store.set('pageSize', Number(pageSizeSel.value)); showVacancies(false); });
+// «Уже открывал(а)»: отмечаем вакансии, которые человек открыл, чтобы не путаться в просмотренных
+document.getElementById('results').addEventListener('click', e => {
+  const a = e.target.closest('a[data-open]');
+  if (!a) return;
+  const opened = store.get('opened', []);
+  if (!opened.includes(a.href)) store.set('opened', opened.concat(a.href).slice(-500));
+  const c = a.closest('.vac'); if (c) c.classList.add('seen');
+});
 
 // ---- Резюме ----
-document.getElementById('makeResume').onclick = () => {
+// Резюме собирается только из того, что человек заполнил: никаких заглушек вроде «Университет»
+// или «(отметь навыки…)» в готовом тексте (замечание из теста: резюме выглядело сломанным).
+// Чего не хватает — показываем отдельным списком с кнопками «где заполнить».
+let resumeText = '';
+function buildResume() {
   const s = readStudent();
   const val = id => document.getElementById(id).value.trim();
-  const skills = [...s.skills].map(id => labelOf(SKILLS, id));
-  const has = [...s.has].map(id => labelOf(HAS, id));
-  const times = [...s.slots].map(id => labelOf(SLOTS, id).toLowerCase());
-  const exp = [...s.jobs].map(id => labelOf(JOBS, id))
-    .concat(val('exp').split('\n').map(x => x.trim()).filter(Boolean));
-  const out = [
-    (val('name') || 'Имя Фамилия').toUpperCase(),
-    [s.city !== 'any' ? s.city : '', val('contact')].filter(Boolean).join(' · '),
-    '',
-    'ОБРАЗОВАНИЕ',
-    [val('uni') || 'Университет', val('spec')].filter(Boolean).join(', '),
-    '',
-    'НАВЫКИ',
-    skills.length ? skills.map(x => '• ' + x).join('\n') : '• (отметь навыки в шаге 2)',
-    has.length ? '\nДОПОЛНИТЕЛЬНО\n' + has.map(x => '• ' + x).join('\n') : '',
-    '',
-    'ОПЫТ И ПРОЕКТЫ',
-    exp.length ? exp.map(x => '• ' + x).join('\n') : '• Учебные проекты (добавь пару строк выше)',
-  ].join('\n').replace(/\n{3,}/g, '\n\n');
-  // «Цель» и «Готовность к работе» убраны после теста: это обсуждают напрямую с работодателем
-  // Заголовки разделов жирным (просьба Марго: «больше форматирования»)
-  document.getElementById('resume').innerHTML = out.split('\n')
-    .map((l, i) => (i === 0 || isHeading(l)) && l.trim() ? `<b>${esc(l)}</b>` : esc(l)).join('\n');
+  const skills = [...s.skills].map(id => labelOf(SKILLS, id)).filter(Boolean);
+  const has = [...s.has].map(id => labelOf(HAS, id)).filter(Boolean);
+  const exp = [...s.jobs].map(id => labelOf(JOBS, id)).filter(Boolean)
+    .concat(val('exp').split('\n').map(x => x.replace(/^[•\-–\s]+/, '').trim()).filter(Boolean));
+  const name = val('name');
+  const contacts = [s.city !== 'any' ? s.city : '', val('contact')].filter(Boolean);
+  const study = [val('uni'), val('spec')].filter(Boolean).join(', ');
+  // «Цель» и «Готовность к работе» убраны после первого теста: это обсуждают напрямую с работодателем
+  const secs = [];
+  if (study) secs.push(['ОБРАЗОВАНИЕ', [study]]);
+  if (skills.length) secs.push(['НАВЫКИ', skills]);
+  if (exp.length) secs.push(['ОПЫТ И ПРОЕКТЫ', exp]);
+  if (has.length) secs.push(['ДОПОЛНИТЕЛЬНО', has]);
+  const missing = [];
+  if (!val('contact')) missing.push(['телефон или Telegram — чтобы работодатель мог ответить', 'contact']);
+  if (!study) missing.push(['университет и специальность', 'uni']);
+  if (!skills.length) missing.push(['навыки — отметь их во вкладке «Подбор», шаг 2', 'tab:podbor']);
+  if (!exp.length) missing.push(['опыт и проекты — подойдут курсовой, волонтёрство, кружок', 'exp']);
+  return { name, contacts, secs, missing };
+}
+function renderResume() {
+  const r = buildResume();
+  const box = document.getElementById('resume');
+  box.innerHTML = `<b class="r-name">${esc(r.name)}</b>` +
+    (r.contacts.length ? `<p class="r-contacts">${esc(r.contacts.join(' · '))}</p>` : '') +
+    r.secs.map(([h, items]) => `<div class="r-sec"><b class="r-h">${h}</b>` +
+      (items.length === 1 && h === 'ОБРАЗОВАНИЕ' ? `<p>${esc(items[0])}</p>` : `<ul>${items.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`) + '</div>').join('');
+  resumeText = [r.name.toUpperCase(), r.contacts.join(' · '), '']
+    .concat(...r.secs.map(([h, items]) => [h, ...(h === 'ОБРАЗОВАНИЕ' ? items : items.map(x => '• ' + x)), '']))
+    .join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  const ch = document.getElementById('resumeCheck');
+  ch.innerHTML = r.missing.length ? `<div class="checklist"><b>Резюме станет сильнее, если добавить:</b><ul>${r.missing.map(([t, where]) =>
+    `<li>${esc(t)} <button type="button" class="btn btn-ghost" data-fill="${where}">${where === 'tab:podbor' ? 'Перейти' : 'Заполнить'}</button></li>`).join('')}</ul></div>` : '';
+}
+document.getElementById('resumeCheck').addEventListener('click', e => {
+  const b = e.target.closest('[data-fill]');
+  if (!b) return;
+  const w = b.dataset.fill;
+  if (w === 'tab:podbor') { go('podbor'); setTimeout(() => document.getElementById('skills').scrollIntoView({ behavior: 'smooth', block: 'center' }), 50); return; }
+  const f = document.getElementById(w); f.scrollIntoView({ behavior: 'smooth', block: 'center' }); f.focus();
+});
+// После первого «Сделать резюме» оно обновляется само, пока человек дописывает поля
+['name', 'contact', 'uni', 'spec', 'exp'].forEach(id => document.getElementById(id).addEventListener('input', () => {
+  if (!document.getElementById('resumeBox').hidden && document.getElementById('name').value.trim()) renderResume();
+}));
+document.getElementById('makeResume').onclick = () => {
+  const s = readStudent();
+  if (!document.getElementById('name').value.trim()) {
+    toast('Впиши имя и фамилию — с них начинается резюме');
+    const n = document.getElementById('name'); n.focus(); n.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  renderResume();
   document.getElementById('resumeBox').hidden = false;
   document.getElementById('copied').textContent = '';
+  setTimeout(() => document.getElementById('resumeBox').scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
 
   // Вместе с резюме сразу подбираем вакансии (после теста: Марго не увидела вакансий)
   const rv = document.getElementById('resumeVac');
@@ -1152,23 +1262,25 @@ document.getElementById('makeResume').onclick = () => {
 };
 
 document.getElementById('copy').onclick = async () => {
-  const text = document.getElementById('resume').textContent;
+  const text = resumeText;
   try { await navigator.clipboard.writeText(text); document.getElementById('copied').textContent = 'Скопировано!'; }
   catch (e) { document.getElementById('copied').textContent = 'Не получилось — выдели текст вручную.'; }
 };
 
 // ---- Резюме: Word и печать (просьба Леры и Марго из теста; у praca.by есть «Скачать в Word») ----
 document.getElementById('toWord').onclick = () => {
-  const lines = document.getElementById('resume').textContent.split('\n');
+  const lines = resumeText.split('\n');
   const body = lines.map((l, i) => {
     if (!l.trim()) return '';
     if (i === 0) return `<h1>${esc(l)}</h1>`;
+    if (i === 1) return `<p class="c">${esc(l)}</p>`;
     if (isHeading(l)) return `<h3>${esc(l)}</h3>`;
     return `<p>${esc(l)}</p>`;
   }).join('\n');
   const html = `<html><head><meta charset="utf-8"><style>
-    body{font-family:Calibri,Arial,sans-serif;font-size:11pt} h1{font-size:18pt;margin:0 0 4pt}
-    h3{font-size:11pt;letter-spacing:1pt;color:#2f6fde;border-bottom:1px solid #ccc;margin:14pt 0 4pt} p{margin:0 0 3pt}
+    body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1D1A35} h1{font-size:20pt;margin:0 0 2pt}
+    p.c{color:#565273;margin:0 0 8pt}
+    h3{font-size:10pt;letter-spacing:1.5pt;color:#5B3FE0;border-bottom:1.5pt solid #ECE8FF;margin:14pt 0 4pt;padding-bottom:2pt} p{margin:0 0 3pt}
   </style></head><body>${body}</body></html>`;
   downloadFile('Резюме.doc', 'application/msword', '﻿' + html);
 };
@@ -1217,6 +1329,8 @@ function showTab(tab, scrollTo) {
   document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== tab; });
   document.querySelectorAll('.tabs a').forEach(a => { if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   document.documentElement.scrollTop = scrollTo || 0;
+  // резюме подтягивает навыки, отмеченные во вкладке «Подбор»
+  if (tab === 'rezume' && !document.getElementById('resumeBox').hidden && document.getElementById('name').value.trim()) renderResume();
 }
 function go(tab) {
   if (!TABS.includes(tab)) tab = 'home';
